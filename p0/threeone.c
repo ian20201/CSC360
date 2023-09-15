@@ -46,8 +46,10 @@ void getinput(char* input){
     if(!strcmp(input,"getcwd()")){
         char directory[200];
         printf("%s\n",getcwd(directory,sizeof(directory)));
+        //Get working directory
     }else if(!strcmp(input,"getlogin()")){
         printf("%s\n",getlogin());
+        //Get username
     }else if(!strcmp(input,"gethostname()")){
         char hostname[200];
         gethostname(hostname,sizeof(hostname)); //return the host name to b, but the function is int function
@@ -141,6 +143,8 @@ int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
 int main(int argc, char*argv[]){
 
     char* input;
+    char* prompt = {};
+
     while ((input = readline("> ")) != NULL) {
         if (strlen(input) > 0) {
         add_history(input);
