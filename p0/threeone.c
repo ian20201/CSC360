@@ -61,6 +61,18 @@ void getinput(char* input){
     }
 }
 
+char get_directory(){
+
+}
+
+char get_username(){
+
+}
+
+char get_hostname(){
+    
+}
+
 int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
     pid_t pid;
     char* command = split[0];
