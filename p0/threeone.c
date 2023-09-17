@@ -17,6 +17,8 @@
 #define MAX_IN_CHARS 200
 
 void getinput(char* input);
+void get_directory();
+void get_hostname();
 int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args);
 
 void getinput(char* input){
@@ -61,6 +63,23 @@ void getinput(char* input){
     }
 }
 
+void get_directory(char *directory){
+    // char directory[200];
+    // printf("%s\n",getcwd(directory,sizeof(directory)));
+    getcwd(directory,sizeof(char)*200);
+    // printf("%s@@\n",directory);
+    //Get working directory
+    // return directory;
+}
+
+void get_hostname(char *hostname){
+    // char hostname[200];
+    gethostname(hostname,MAX_IN_CHARS); //return the host name to b, but the function is int function
+    // gethostname(hostname,sizeof(hostname)); //return the host name to b, but the function is int function
+    // printf("%s\n",hostname);
+    // return *hostname;
+}
+
 int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
     pid_t pid;
     char* command = split[0];
@@ -88,19 +107,20 @@ int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
             }
         }
     default:
-        do {
-            if ((pid = waitpid(pid, &status, WNOHANG)) == -1)
-                perror("wait() error");
-            // else if (pid == 0) {
-            //     time(&t);
-            //     printf("child is still running at %s", ctime(&t));
-            //     sleep(1);
-            // }
-            else {
-                if (WIFEXITED(status));
-                else puts("child did not exit successfully");
-            }
-        } while (pid == 0);        
+        // do {
+        //     if ((pid = waitpid(pid, &status, WNOHANG)) == -1)
+        //         perror("wait() error");
+        //     // else if (pid == 0) {
+        //     //     time(&t);
+        //     //     printf("child is still running at %s", ctime(&t));
+        //     //     sleep(1);
+        //     // }
+        //     else {
+        //         if (WIFEXITED(status));
+        //         else puts("child did not exit successfully");
+        //     }
+        // } while (pid == 0);   
+        waitpid(pid,&status,0);     
     }            
     for(int counter = 0; counter < args; counter++)
         free(argument_list[counter]);
@@ -112,14 +132,22 @@ int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
 int main(int argc, char*argv[]){
 
     char* input;
-    // char* prompt = [];
-
-    while ((input = readline("> ")) != NULL) {
+    char directory_main[200];
+    char hostname_main[200];
+    char* prompt[] = {getlogin(),"@",hostname_main,": ",directory_main," > "};
+    while (1) {
+        get_directory(directory_main);
+        get_hostname(hostname_main);
+        // prompt[4] = directory_main;
+        //Reset the directoy forevery execution
+        printf("%s%s%s%s%s%s",prompt[0],prompt[1],prompt[2],prompt[3],prompt[4],prompt[5]);
+        input = readline("");
+        // readline malloc's a new buffer every time.
         if (strlen(input) > 0) {
         add_history(input);
         }
         getinput(input);
-        // readline malloc's a new buffer every time.
+
         free(input);
     }
 
