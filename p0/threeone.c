@@ -64,20 +64,12 @@ void getinput(char* input){
 }
 
 void get_directory(char *directory){
-    // char directory[200];
-    // printf("%s\n",getcwd(directory,sizeof(directory)));
     getcwd(directory,sizeof(char)*200);
-    // printf("%s@@\n",directory);
     //Get working directory
-    // return directory;
 }
 
 void get_hostname(char *hostname){
-    // char hostname[200];
     gethostname(hostname,MAX_IN_CHARS); //return the host name to b, but the function is int function
-    // gethostname(hostname,sizeof(hostname)); //return the host name to b, but the function is int function
-    // printf("%s\n",hostname);
-    // return *hostname;
 }
 
 int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
