@@ -54,7 +54,8 @@ void getinput(char* input){
         //Get username
     }else if(!strcmp(input,"gethostname()")){
         char hostname[200];
-        gethostname(hostname,sizeof(hostname)); //return the host name to b, but the function is int function
+        gethostname(hostname,sizeof(hostname)); 
+        //Return the host name
         printf("%s\n",hostname);
     }else if(!strcmp(input,"exit")){
         exit(0);
@@ -69,7 +70,8 @@ void get_directory(char *directory){
 }
 
 void get_hostname(char *hostname){
-    gethostname(hostname,MAX_IN_CHARS); //return the host name to b, but the function is int function
+    gethostname(hostname,MAX_IN_CHARS); 
+    //Return the host name
 }
 
 int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
@@ -112,7 +114,9 @@ int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
         //         else puts("child did not exit successfully");
         //     }
         // } while (pid == 0);   
-        waitpid(pid,&status,0);     
+        waitpid(pid,&status,0);
+        //pid_t waitpid(pid_t pid, int *status_ptr, int options); 
+        //0 here mean to wait for the child process     
     }            
     for(int counter = 0; counter < args; counter++)
         free(argument_list[counter]);
@@ -134,7 +138,7 @@ int main(int argc, char*argv[]){
         //Reset the directoy forevery execution
         printf("%s%s%s%s%s%s",prompt[0],prompt[1],prompt[2],prompt[3],prompt[4],prompt[5]);
         input = readline("");
-        // readline malloc's a new buffer every time.
+        //readline malloc's a new buffer every time.
         if (strlen(input) > 0) {
         add_history(input);
         }
