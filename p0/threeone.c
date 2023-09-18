@@ -131,6 +131,8 @@ int main(int argc, char*argv[]){
     char directory_main[200];
     char hostname_main[200];
     char* prompt[] = {getlogin(),"@",hostname_main,": ",directory_main," > "};
+    //getloin() is use to get the Username
+    
     while (1) {
         get_directory(directory_main);
         get_hostname(hostname_main);
