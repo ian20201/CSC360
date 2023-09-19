@@ -44,7 +44,7 @@ void getinput(char* input){
     }   
 
     free(tmpinput);
-
+    /*
     if(!strcmp(input,"getcwd()")){
         char directory[200];
         printf("%s\n",getcwd(directory,sizeof(directory)));
@@ -61,7 +61,9 @@ void getinput(char* input){
         exit(0);
     }else{
         use_fork(split,counter);
-    }
+    }*/
+
+    use_fork(split,counter);
 }
 
 void get_directory(char *directory){
@@ -89,41 +91,43 @@ int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
     int status;
     pid = fork();
     switch (pid) {
-    case -1:
-        perror("fork");
-        exit(EXIT_FAILURE);
-    case 0:{
-            int status_code;
-            if(!strcmp(command,"cd")){
-                printf("cd command find\n");
+        case -1:
+            perror("fork");
+            exit(EXIT_FAILURE);
+        case 0:{
+                int status_code;
+                if(!strcmp(command,"cd")){
+                    printf("cd command find\n");
+                }else if(!strcmp(command,"exit")){
+                    printf("exit system\n");
+                    exit(0);
+                }else{
+                    status_code = execvp(command, argument_list);
+                    //Run the original command for ls or other command
+                }                
+                
+                if (status_code == -1) {
+                    printf("Terminated Incorrectly\n");
+                    return 1;
+                }
             }
-            else{
-                status_code = execvp(command, argument_list);
-                //Run the original command for ls or other command
-            }                
-            
-            if (status_code == -1) {
-                printf("Terminated Incorrectly\n");
-                return 1;
-            }
-        }
-    default:
-        // do {
-        //     if ((pid = waitpid(pid, &status, WNOHANG)) == -1)
-        //         perror("wait() error");
-        //     // else if (pid == 0) {
-        //     //     time(&t);
-        //     //     printf("child is still running at %s", ctime(&t));
-        //     //     sleep(1);
-        //     // }
-        //     else {
-        //         if (WIFEXITED(status));
-        //         else puts("child did not exit successfully");
-        //     }
-        // } while (pid == 0);   
-        waitpid(pid,&status,0);
-        //pid_t waitpid(pid_t pid, int *status_ptr, int options); 
-        //0 here mean to wait for the child process     
+        default:
+            // do {
+            //     if ((pid = waitpid(pid, &status, WNOHANG)) == -1)
+            //         perror("wait() error");
+            //     // else if (pid == 0) {
+            //     //     time(&t);
+            //     //     printf("child is still running at %s", ctime(&t));
+            //     //     sleep(1);
+            //     // }
+            //     else {
+            //         if (WIFEXITED(status));
+            //         else puts("child did not exit successfully");
+            //     }
+            // } while (pid == 0);   
+            waitpid(pid,&status,0);
+            //pid_t waitpid(pid_t pid, int *status_ptr, int options); 
+            //0 here mean to wait for the child process     
     }            
     for(int counter = 0; counter < args; counter++)
         free(argument_list[counter]);
@@ -139,7 +143,7 @@ int main(int argc, char*argv[]){
     char hostname_main[200];
     char* prompt[] = {getlogin(),"@",hostname_main,": ",directory_main," > "};
     //getloin() is use to get the Username
-    printf("%s\n",getlogin());
+    // printf("%s\n",getlogin());
     while (1) {
         get_directory(directory_main);
         get_hostname(hostname_main);
