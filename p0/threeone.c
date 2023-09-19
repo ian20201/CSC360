@@ -27,43 +27,35 @@ void getinput(char* input){
 
     char split[MAX_IN_COMMAND][MAX_IN_CHARS];
     char *token = strtok(tmpinput," ");
-    strcpy(split[0],token);
-    int counter = 1;
-    if (strcmp(split[0],"")){    
-        
-        while(token != NULL){
 
-            token = strtok(NULL, " ");
-            if(token == NULL)
-                break;
-            strcpy(split[counter],token);
+    if(token != NULL){
+        strcpy(split[0],token);
+        int counter = 1;
+        if (strcmp(split[0],"")){    
+            
+            while(token != NULL){
 
-            counter++;
+                token = strtok(NULL, " ");
+                if(token == NULL)
+                    break;
+                strcpy(split[counter],token);
+
+                counter++;
+            }
+            // Run all the command from the Input line
+        }   
+
+        free(tmpinput);
+
+        if(!strcmp(input,"exit")){
+            printf("Exit the System\n");
+            exit(0);
+        }else{
+            use_fork(split,counter);
         }
-        // Run all the command from the Input line
-    }   
-
-    free(tmpinput);
-    /*
-    if(!strcmp(input,"getcwd()")){
-        char directory[200];
-        printf("%s\n",getcwd(directory,sizeof(directory)));
-        //Get working directory
-    }else if(!strcmp(input,"getlogin()")){
-        printf("%s\n",getlogin());
-        //Get username
-    }else if(!strcmp(input,"gethostname()")){
-        char hostname[200];
-        gethostname(hostname,sizeof(hostname)); 
-        //Return the host name
-        printf("%s\n",hostname);
-    }else if(!strcmp(input,"exit")){
-        exit(0);
     }else{
-        use_fork(split,counter);
-    }*/
-
-    use_fork(split,counter);
+       printf("\n"); 
+    }
 }
 
 void get_directory(char *directory){
@@ -97,15 +89,24 @@ int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
         case 0:{
                 int status_code;
                 if(!strcmp(command,"cd")){
+                    if(args > 2){
+                        printf("Ivalid cd command\n");
+                        break;
+                    }else if(!strcmp(argument_list[1],"~")){
+                        chdir(getenv("HOME"));
+                    }else if(argument_list[1] == NULL){
+                        chdir(getenv("HOME"));
+                    }else{
+                        chdir(argument_list[1]);
+                    }    
                     printf("cd command find\n");
-                }else if(!strcmp(command,"exit")){
-                    printf("exit system\n");
-                    exit(0);
+                    printf("%s args:%d\n",argument_list[1],args);
+                    
                 }else{
                     status_code = execvp(command, argument_list);
                     //Run the original command for ls or other command
                 }                
-                
+                // status_code = execvp(command, argument_list);
                 if (status_code == -1) {
                     printf("Terminated Incorrectly\n");
                     return 1;
@@ -138,7 +139,7 @@ int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
 
 int main(int argc, char*argv[]){
 
-    char* input;
+    char* input = NULL;
     char directory_main[200];
     char hostname_main[200];
     char* prompt[] = {getlogin(),"@",hostname_main,": ",directory_main," > "};
@@ -153,7 +154,7 @@ int main(int argc, char*argv[]){
         input = readline("");
         //readline malloc's a new buffer every time.
         if (strlen(input) > 0) {
-        add_history(input);
+            add_history(input);
         }
         getinput(input);
 
@@ -162,6 +163,6 @@ int main(int argc, char*argv[]){
 
     // Reference https://eli.thegreenplace.net/2016/basics-of-using-the-readline-library/
 
-
+    return 0;
 
 }
