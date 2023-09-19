@@ -29,6 +29,7 @@ void getinput(char* input){
     char *token = strtok(tmpinput," ");
 
     if(token != NULL){
+    //Check if the token is NULL or not for the ENTER KEY check!!
         strcpy(split[0],token);
         int counter = 1;
         if (strcmp(split[0],"")){    
