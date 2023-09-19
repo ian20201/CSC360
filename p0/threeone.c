@@ -93,8 +93,15 @@ int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
         perror("fork");
         exit(EXIT_FAILURE);
     case 0:{
-            int status_code = execvp(command, argument_list);
-            // exit(1);
+            int status_code;
+            if(!strcmp(command,"cd")){
+                printf("cd command find\n");
+            }
+            else{
+                status_code = execvp(command, argument_list);
+                //Run the original command for ls or other command
+            }                
+            
             if (status_code == -1) {
                 printf("Terminated Incorrectly\n");
                 return 1;
@@ -132,7 +139,7 @@ int main(int argc, char*argv[]){
     char hostname_main[200];
     char* prompt[] = {getlogin(),"@",hostname_main,": ",directory_main," > "};
     //getloin() is use to get the Username
-    
+    printf("%s\n",getlogin());
     while (1) {
         get_directory(directory_main);
         get_hostname(hostname_main);
