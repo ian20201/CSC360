@@ -100,9 +100,8 @@ int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
                     }else{
                         chdir(argument_list[1]);
                     }    
-                    printf("cd command find\n");
-                    printf("%s args:%d\n",argument_list[1],args);
-                    
+                    // printf("cd command find\n");
+                    // printf("%s args:%d\n",argument_list[1],args);    
                 }else{
                     status_code = execvp(command, argument_list);
                     //Run the original command for ls or other command
@@ -145,11 +144,9 @@ int main(int argc, char*argv[]){
     char hostname_main[200];
     char* prompt[] = {getlogin(),"@",hostname_main,": ",directory_main," > "};
     //getloin() is use to get the Username
-    // printf("%s\n",getlogin());
     while (1) {
         get_directory(directory_main);
         get_hostname(hostname_main);
-        // prompt[4] = directory_main;
         //Reset the directoy forevery execution
         printf("%s%s%s%s%s%s",prompt[0],prompt[1],prompt[2],prompt[3],prompt[4],prompt[5]);
         input = readline("");
