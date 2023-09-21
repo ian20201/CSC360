@@ -95,6 +95,7 @@ int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
                         break;
                     }else if(argument_list[1] == NULL){
                         chdir(getenv("HOME"));
+                        //Nessesy to dected the NULL argument before the using the strcmp, dected the cd with nothing at back
                     }else if(!strcmp(argument_list[1],"~")){
                         chdir(getenv("HOME"));
                     }else{
