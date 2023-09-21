@@ -93,9 +93,9 @@ int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
                     if(args > 2){
                         printf("Ivalid cd command\n");
                         break;
-                    }else if(!strcmp(argument_list[1],"~")){
-                        chdir(getenv("HOME"));
                     }else if(argument_list[1] == NULL){
+                        chdir(getenv("HOME"));
+                    }else if(!strcmp(argument_list[1],"~")){
                         chdir(getenv("HOME"));
                     }else{
                         chdir(argument_list[1]);
