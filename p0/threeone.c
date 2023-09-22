@@ -103,6 +103,13 @@ int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
                     }    
                     // printf("cd command find\n");
                     // printf("%s args:%d\n",argument_list[1],args);    
+                }else if(!strcmp(command,"bg")){
+                    printf("bg command found\n");
+                    // status_code = execvp(command, argument_list);
+                    char *test[] = {"cat","test.txt",NULL};
+                    status_code = execvp(test[0], test);
+                    //Run the bg command in back ground
+                    // waitpid(pid, &status, WNOHANG);
                 }else{
                     status_code = execvp(command, argument_list);
                     //Run the original command for ls or other command
@@ -126,10 +133,25 @@ int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
             //         if (WIFEXITED(status));
             //         else puts("child did not exit successfully");
             //     }
-            // } while (pid == 0);   
-            waitpid(pid,&status,0);
+            // } while (pid == 0);
+                    if(!strcmp(command,"bg")){
+                        printf("bg wait\n");
+                        // char *test[] = {"cat","test.txt",NULL};
+                        // execvp(test[0], test);
+                        // waitpid(pid, &status, WNOHANG);
+                        //pid_t waitpid(pid_t pid, int *status_ptr, int options); 
+                        //WNOHANG mant dont wait for the child process to end
+                    }else{
+                        waitpid(pid,&status,0);
+                        //pid_t waitpid(pid_t pid, int *status_ptr, int options); 
+                        //0 here mean to wait for the child process 
+                    }
+
+            // waitpid(pid,&status,0);
             //pid_t waitpid(pid_t pid, int *status_ptr, int options); 
-            //0 here mean to wait for the child process     
+            //0 here mean to wait for the child process
+
+    
     }            
     for(int counter = 0; counter < args; counter++)
         free(argument_list[counter]);
