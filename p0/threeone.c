@@ -21,6 +21,30 @@ void get_directory();
 void get_hostname();
 int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args);
 
+int main(int argc, char*argv[]){
+    char* input = NULL;
+    char directory_main[200];
+    char hostname_main[200];
+    char* prompt[] = {getlogin(),"@",hostname_main,": ",directory_main," > "};
+    //getloin() is use to get the Username
+    while (1) {
+        get_directory(directory_main);
+        get_hostname(hostname_main);
+        //Reset the directoy forevery execution
+        printf("%s%s%s%s%s%s",prompt[0],prompt[1],prompt[2],prompt[3],prompt[4],prompt[5]);
+        input = readline("");
+        //readline malloc's a new buffer every time.
+        if (strlen(input) > 0) {
+            add_history(input);
+        }
+        getinput(input);
+
+        free(input);
+    }
+    // Reference https://eli.thegreenplace.net/2016/basics-of-using-the-readline-library/
+    return 0;
+}
+
 void getinput(char* input){
     char *tmpinput = malloc(sizeof(input)+1);
     strcpy(tmpinput,input);
@@ -158,32 +182,4 @@ int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
     //Reference https://man7.org/linux/man-pages/man2/fork.2.html
     //Reference https://www.digitalocean.com/community/tutorials/execvp-function-c-plus-plus
     //Reference https://www.ibm.com/docs/en/zos/2.3.0?topic=functions-waitpid-wait-specific-child-process-end
-}
-
-int main(int argc, char*argv[]){
-
-    char* input = NULL;
-    char directory_main[200];
-    char hostname_main[200];
-    char* prompt[] = {getlogin(),"@",hostname_main,": ",directory_main," > "};
-    //getloin() is use to get the Username
-    while (1) {
-        get_directory(directory_main);
-        get_hostname(hostname_main);
-        //Reset the directoy forevery execution
-        printf("%s%s%s%s%s%s",prompt[0],prompt[1],prompt[2],prompt[3],prompt[4],prompt[5]);
-        input = readline("");
-        //readline malloc's a new buffer every time.
-        if (strlen(input) > 0) {
-            add_history(input);
-        }
-        getinput(input);
-
-        free(input);
-    }
-
-    // Reference https://eli.thegreenplace.net/2016/basics-of-using-the-readline-library/
-
-    return 0;
-
 }
