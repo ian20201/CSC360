@@ -187,9 +187,10 @@ int change_directory(char* argument_list[MAX_IN_COMMAND],int args){
         //Nessesy to dected the NULL argument before the using the strcmp, dected the cd with nothing at back
     }else if(!strcmp(argument_list[1],"~")){
         status_code = chdir(getenv("HOME"));
+        //Change the director to home directory
     }else{
         status_code = chdir(argument_list[1]);
-        //Run the regular change director
+        //Run the regular change directory
     }
     return status_code;
     //Return the status code for the status check
