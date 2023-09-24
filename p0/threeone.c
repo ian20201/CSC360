@@ -43,12 +43,12 @@ int main(int argc, char*argv[]){
 void print_prompt(){
     char directory_main[200];
     char hostname_main[200];
-    char* prompt[] = {getlogin(),"@",hostname_main,": ",directory_main," > "};
+    char* prompt[] = {getlogin(),"@",hostname_main,": ",directory_main," >"};
     //getloin() is use to get the Username
     get_directory(directory_main);
     get_hostname(hostname_main);
     //Reset the directoy forevery execution
-    printf("%s%s%s%s%s%s",prompt[0],prompt[1],prompt[2],prompt[3],prompt[4],prompt[5]);
+    printf("%s%s%s%s%s%s ",prompt[0],prompt[1],prompt[2],prompt[3],prompt[4],prompt[5]);
     //Print the current working directory
 }
 
@@ -102,16 +102,29 @@ int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
     pid_t pid;
     char* command = split[0];
     char* argument_list[args+1];
-
-    for(int counter = 0; counter < args; counter++){
+    if(!strcmp(command,"bg")){
+        for(int counter = 1; counter < args; counter++){
         argument_list[counter] = malloc(sizeof(split[counter+1])+1);
         strcpy(argument_list[counter],split[counter]);
         //Save all the command into the argument_list
     }
+    }else{
+        for(int counter = 0; counter < args; counter++){
+        argument_list[counter] = malloc(sizeof(split[counter+1])+1);
+        strcpy(argument_list[counter],split[counter]);
+        //Save all the command into the argument_list
+    }  
+    }
+    // for(int counter = 0; counter < args; counter++){
+    //     argument_list[counter] = malloc(sizeof(split[counter+1])+1);
+    //     strcpy(argument_list[counter],split[counter]);
+    //     //Save all the command into the argument_list
+    // }
     argument_list[args] = NULL;  
 
     int status;
     pid = fork();
+    printf("PID: %d\n",pid);
     switch (pid) {
         case -1:
             perror("fork");
@@ -120,7 +133,8 @@ int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
                 int status_code;
                 if(!strcmp(command,"cd")){
                     status_code = change_directory(argument_list,args);
-                    //Use for the cd command processes    
+                    //Use for the cd command processes
+                    // printf("PID: %d\n",pid);    
                 }else if(!strcmp(command,"bg")){
                     printf("bg command found\n");
                     // status_code = execvp(command, argument_list);
@@ -160,16 +174,16 @@ int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
                         //pid_t waitpid(pid_t pid, int *status_ptr, int options); 
                         //WNOHANG mant dont wait for the child process to end
                     }else{
+                        printf("PID3: %d\n",pid);
                         waitpid(pid,&status,0);
                         //pid_t waitpid(pid_t pid, int *status_ptr, int options); 
                         //0 here mean to wait for the child process 
+                        printf("PID2: %d\n",pid);
                     }
 
             // waitpid(pid,&status,0);
             //pid_t waitpid(pid_t pid, int *status_ptr, int options); 
-            //0 here mean to wait for the child process
-
-    
+            //0 here mean to wait for the child process   
     }            
     for(int counter = 0; counter < args; counter++)
         free(argument_list[counter]);
