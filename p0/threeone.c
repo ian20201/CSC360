@@ -4,7 +4,7 @@
 //CSC 360 Assignment 1
 #include <stdio.h>
 #include <unistd.h>
-#include <signal.h>
+#include <signal.h> //Signal control for the background process check
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
@@ -24,6 +24,7 @@ typedef struct bg_process{
 
 bg_process* bg_process_list = NULL;
 int bg_process_list_count = 0;
+volatile sig_atomic_t child_terminated = 0;
 
 void print_prompt();
 void get_directory();
@@ -33,9 +34,23 @@ int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args);
 int change_directory(char* argument_list[MAX_IN_COMMAND],int args);
 void string_casting(char* command[MAX_IN_COMMAND],char* return_command);
 bg_process* add_bg_process(int pid, char* command);
+void remove_bg_process(bg_process *target_process);
+void display_bg_process();
+void check_bg_process_status();
+void handle_sigchld(int sig);
+
 
 int main(int argc, char*argv[]){
-    char* input = NULL;    
+    char* input = NULL;
+    struct sigaction background_check;
+    background_check.sa_handler = &handle_sigchld;
+    background_check.sa_flags = SA_RESTART | SA_NOCLDSTOP;
+    //Reference https://linux.die.net/man/2/sigaction
+    if(sigaction(SIGCHLD, &background_check,0) == -1){
+        perror("sigaction");
+        exit(1);
+    }
+
     while (1) {
         print_prompt();
         input = readline("");
@@ -100,6 +115,8 @@ void getinput(char* input){
         if(!strcmp(split[0],"exit")){
             printf("Exit the System\n");
             exit(0);
+        }else if(!strcmp(split[0],"bglist")){
+            display_bg_process();
         }else{
             use_fork(split,counter);
         }
@@ -179,7 +196,7 @@ int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
                     if(!strcmp(command,"bg")){
                         printf("PID_bg: %d\n",pid);
                         printf("bg wait\n");
-                        // waitpid(0, NULL, WNOHANG);
+                        // waitpid(0, &status, WNOHANG);
                         //pid_t waitpid(pid_t pid, int *status_ptr, int options); 
                         //WNOHANG mant dont wait for the child process to end
                         char *casting_command;
@@ -189,7 +206,7 @@ int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
                         //Make all the command to in argument_list become one sentence in casting_command
                         add_bg_process(pid,casting_command);
                         //Add the PID and the command into the struct pointer
-                        printf("PID_bg: %d command: %s\n",pid,casting_command);
+                        printf("PID_bg: %d Command: %s\n",pid,casting_command);
                         free(casting_command);
                     }else{
                         printf("PID3: %d\n",pid);
@@ -250,4 +267,64 @@ bg_process* add_bg_process(int pid, char* command){
     bg_process_list_count++;
     return new_process;
     //Add the PID and the command into the struct pointer
+}
+
+void remove_bg_process(bg_process *target_process){
+    if(!target_process) return;
+    if(bg_process_list == target_process){
+        bg_process_list = target_process->next;
+    }else{
+        bg_process* tmp = bg_process_list;
+        while (tmp->next && tmp->next != target_process)
+        {
+            tmp = tmp->next;
+        }
+        if(tmp->next){
+            tmp->next = target_process->next;
+        }
+        free(target_process);
+        bg_process_list--;
+    }
+}
+
+void display_bg_process(){
+    printf("\nBackgroud Processes: \n");
+    for(bg_process* tmp = bg_process_list;tmp; tmp = tmp->next){
+        printf("PID %d: Command %s\n",tmp->pid, tmp->command);
+    }
+    printf("Total Background Jobs: %d\n\n", bg_process_list_count);
+}
+
+void check_bg_process_status(){
+    int status;
+    // int return_status = 0;
+    bg_process* current_p = bg_process_list;
+    while (current_p)
+    {
+        if(waitpid(current_p->pid, &status, WNOHANG) != 0){
+            //pid_t waitpid(pid_t pid, int *status_ptr, int options); 
+            //WNOHANG mant dont wait for the child process to end
+            printf("\nPID %d: %s has terminated. \n", current_p->pid, current_p->command);
+            print_prompt();
+            bg_process* tmp = current_p;
+            current_p = current_p->next;
+            remove_bg_process(tmp);
+
+            // print_prompt();
+        }else{
+            current_p = current_p->next;
+        }
+    }
+    // return return_status;    
+}
+
+void handle_sigchld(int sig){
+    (void)sig;
+    check_bg_process_status();
+    // int status = 0;
+    // status = check_bg_process_status();
+    // if(status == 1)
+    // print_prompt();
+    child_terminated = 1;
+    // printf(" ");
 }
