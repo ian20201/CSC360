@@ -23,7 +23,7 @@ typedef struct bg_process{
 } bg_process;
 
 bg_process* bg_process_list = NULL;
-int bg_process_count = 0;
+int bg_process_list_count = 0;
 
 void print_prompt();
 void get_directory();
@@ -247,7 +247,7 @@ bg_process* add_bg_process(int pid, char* command){
     strcpy(new_process->command,command);
     new_process->next = bg_process_list;
     bg_process_list = new_process;
-    bg_process_count++;
+    bg_process_list_count++;
     return new_process;
     //Add the PID and the command into the struct pointer
 }
