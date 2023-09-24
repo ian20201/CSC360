@@ -16,12 +16,23 @@
 #define MAX_IN_COMMAND 100
 #define MAX_IN_CHARS 200
 
+typedef struct bg_process{
+    int pid;
+    char command[MAX_IN_COMMAND];
+    struct bg_process* next;   
+} bg_process;
+
+bg_process* bg_process_list = NULL;
+int bg_process_count = 0;
+
 void print_prompt();
 void get_directory();
 void get_hostname();
 void getinput(char* input);
 int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args);
 int change_directory(char* argument_list[MAX_IN_COMMAND],int args);
+void string_casting(char* command[MAX_IN_COMMAND],char* return_command);
+bg_process* add_bg_process(int pid, char* command);
 
 int main(int argc, char*argv[]){
     char* input = NULL;    
@@ -81,7 +92,7 @@ void getinput(char* input){
                 strcpy(split[counter],token);
                 counter++;
             }
-            // split all the command from the Input line to the array
+            // Split all the command from the Input line to the array
         }   
 
         free(tmpinput);
@@ -103,28 +114,27 @@ int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
     char* command = split[0];
     char* argument_list[args+1];
     if(!strcmp(command,"bg")){
+        // printf("bg list \n");
         for(int counter = 1; counter < args; counter++){
-        argument_list[counter] = malloc(sizeof(split[counter+1])+1);
-        strcpy(argument_list[counter],split[counter]);
-        //Save all the command into the argument_list
-    }
+        argument_list[counter-1] = malloc(sizeof(split[counter])+1);
+        strcpy(argument_list[counter-1],split[counter]);
+        //Save all the command into the argument_list for bg    
+        }
+        argument_list[args-1] = NULL;
     }else{
         for(int counter = 0; counter < args; counter++){
         argument_list[counter] = malloc(sizeof(split[counter+1])+1);
         strcpy(argument_list[counter],split[counter]);
-        //Save all the command into the argument_list
-    }  
+        //Save all the command into the argument_list 
+        }
+        argument_list[args] = NULL;  
     }
-    // for(int counter = 0; counter < args; counter++){
-    //     argument_list[counter] = malloc(sizeof(split[counter+1])+1);
-    //     strcpy(argument_list[counter],split[counter]);
-    //     //Save all the command into the argument_list
-    // }
-    argument_list[args] = NULL;  
+      
+    // printf("%s %s\n",argument_list[0],argument_list[1]);
 
     int status;
     pid = fork();
-    printf("PID: %d\n",pid);
+    // printf("PID: %d\n",pid);
     switch (pid) {
         case -1:
             perror("fork");
@@ -137,11 +147,11 @@ int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
                     // printf("PID: %d\n",pid);    
                 }else if(!strcmp(command,"bg")){
                     printf("bg command found\n");
-                    // status_code = execvp(command, argument_list);
-                    char *test[] = {"cat","test.txt",NULL};
-                    status_code = execvp(test[0], test);
+                    // char *test[] = {"cat","test.txt",NULL};
+                    // status_code = execvp(test[0], test);
+                    status_code = execvp(argument_list[0], argument_list);
                     //Run the bg command in back ground
-                    // waitpid(pid, &status, WNOHANG);
+                    exit(0);
                 }else{
                     status_code = execvp(command, argument_list);
                     //Run the original command for ls or other command
@@ -167,20 +177,27 @@ int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
             //     }
             // } while (pid == 0);
                     if(!strcmp(command,"bg")){
+                        printf("PID_bg: %d\n",pid);
                         printf("bg wait\n");
-                        // char *test[] = {"cat","test.txt",NULL};
-                        // execvp(test[0], test);
-                        // waitpid(pid, &status, WNOHANG);
+                        // waitpid(0, NULL, WNOHANG);
                         //pid_t waitpid(pid_t pid, int *status_ptr, int options); 
                         //WNOHANG mant dont wait for the child process to end
+                        char *casting_command;
+                        casting_command = malloc(sizeof(MAX_IN_CHARS)+1);
+                        //Creat the char pointer tp stpre the command
+                        string_casting(argument_list,casting_command);
+                        //Make all the command to in argument_list become one sentence in casting_command
+                        add_bg_process(pid,casting_command);
+                        //Add the PID and the command into the struct pointer
+                        printf("PID_bg: %d command: %s\n",pid,casting_command);
+                        free(casting_command);
                     }else{
                         printf("PID3: %d\n",pid);
                         waitpid(pid,&status,0);
                         //pid_t waitpid(pid_t pid, int *status_ptr, int options); 
                         //0 here mean to wait for the child process 
-                        printf("PID2: %d\n",pid);
                     }
-
+                    
             // waitpid(pid,&status,0);
             //pid_t waitpid(pid_t pid, int *status_ptr, int options); 
             //0 here mean to wait for the child process   
@@ -208,4 +225,29 @@ int change_directory(char* argument_list[MAX_IN_COMMAND],int args){
     }
     return status_code;
     //Return the status code for the status check
+}
+
+void string_casting(char* command[MAX_IN_COMMAND],char* return_command){
+    int counter = 0;
+    strcpy(return_command,"");
+    //Clear what is in the command befor use
+    while (command[counter] != NULL)
+    {
+        strcat(return_command,command[counter]);
+        if(command[counter+1]!=NULL)
+            strcat(return_command," ");
+        counter++;
+    }
+    //Make all the command to in argument_list become one sentence in casting_command
+}
+
+bg_process* add_bg_process(int pid, char* command){
+    bg_process* new_process = malloc(sizeof(bg_process));
+    new_process->pid = pid;
+    strcpy(new_process->command,command);
+    new_process->next = bg_process_list;
+    bg_process_list = new_process;
+    bg_process_count++;
+    return new_process;
+    //Add the PID and the command into the struct pointer
 }
