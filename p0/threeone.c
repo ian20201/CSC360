@@ -16,22 +16,17 @@
 #define MAX_IN_COMMAND 100
 #define MAX_IN_CHARS 200
 
-void getinput(char* input);
+void print_prompt();
 void get_directory();
 void get_hostname();
+void getinput(char* input);
 int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args);
+int change_directory(char* argument_list[MAX_IN_COMMAND],int args);
 
 int main(int argc, char*argv[]){
-    char* input = NULL;
-    char directory_main[200];
-    char hostname_main[200];
-    char* prompt[] = {getlogin(),"@",hostname_main,": ",directory_main," > "};
-    //getloin() is use to get the Username
+    char* input = NULL;    
     while (1) {
-        get_directory(directory_main);
-        get_hostname(hostname_main);
-        //Reset the directoy forevery execution
-        printf("%s%s%s%s%s%s",prompt[0],prompt[1],prompt[2],prompt[3],prompt[4],prompt[5]);
+        print_prompt();
         input = readline("");
         //readline malloc's a new buffer every time.
         if (strlen(input) > 0) {
@@ -45,42 +40,16 @@ int main(int argc, char*argv[]){
     return 0;
 }
 
-void getinput(char* input){
-    char *tmpinput = malloc(sizeof(input)+1);
-    strcpy(tmpinput,input);
-
-    char split[MAX_IN_COMMAND][MAX_IN_CHARS];
-    char *token = strtok(tmpinput," ");
-
-    if(token != NULL){
-    //Check if the token is NULL or not for the ENTER KEY check!!
-        strcpy(split[0],token);
-        int counter = 1;
-        if (strcmp(split[0],"")){    
-            
-            while(token != NULL){
-
-                token = strtok(NULL, " ");
-                if(token == NULL)
-                    break;
-                strcpy(split[counter],token);
-
-                counter++;
-            }
-            // Run all the command from the Input line
-        }   
-
-        free(tmpinput);
-
-        if(!strcmp(input,"exit")){
-            printf("Exit the System\n");
-            exit(0);
-        }else{
-            use_fork(split,counter);
-        }
-    }else{
-       printf("\n"); 
-    }
+void print_prompt(){
+    char directory_main[200];
+    char hostname_main[200];
+    char* prompt[] = {getlogin(),"@",hostname_main,": ",directory_main," > "};
+    //getloin() is use to get the Username
+    get_directory(directory_main);
+    get_hostname(hostname_main);
+    //Reset the directoy forevery execution
+    printf("%s%s%s%s%s%s",prompt[0],prompt[1],prompt[2],prompt[3],prompt[4],prompt[5]);
+    //Print the current working directory
 }
 
 void get_directory(char *directory){
@@ -92,6 +61,42 @@ void get_hostname(char *hostname){
     gethostname(hostname,MAX_IN_CHARS); 
     //Return the host name
 }
+
+void getinput(char* input){
+    char *tmpinput = malloc(sizeof(input)+1);
+    strcpy(tmpinput,input);
+
+    char split[MAX_IN_COMMAND][MAX_IN_CHARS];
+    char *token = strtok(tmpinput," ");
+
+    if(token != NULL){
+    //Check if the token is NULL or not for the ENTER KEY check!!
+        strcpy(split[0],token);
+        int counter = 1;
+        if (strcmp(split[0],"")){
+            while(token != NULL){
+                token = strtok(NULL, " ");
+                if(token == NULL)
+                    break;
+                strcpy(split[counter],token);
+                counter++;
+            }
+            // split all the command from the Input line to the array
+        }   
+
+        free(tmpinput);
+
+        if(!strcmp(split[0],"exit")){
+            printf("Exit the System\n");
+            exit(0);
+        }else{
+            use_fork(split,counter);
+        }
+    }else{
+       printf("\n"); 
+    }
+}
+
 
 int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
     pid_t pid;
@@ -114,19 +119,8 @@ int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
         case 0:{
                 int status_code;
                 if(!strcmp(command,"cd")){
-                    if(args > 2){
-                        printf("Ivalid cd command\n");
-                        break;
-                    }else if(argument_list[1] == NULL){
-                        chdir(getenv("HOME"));
-                        //Nessesy to dected the NULL argument before the using the strcmp, dected the cd with nothing at back
-                    }else if(!strcmp(argument_list[1],"~")){
-                        chdir(getenv("HOME"));
-                    }else{
-                        chdir(argument_list[1]);
-                    }    
-                    // printf("cd command find\n");
-                    // printf("%s args:%d\n",argument_list[1],args);    
+                    status_code = change_directory(argument_list,args);
+                    //Use for the cd command processes    
                 }else if(!strcmp(command,"bg")){
                     printf("bg command found\n");
                     // status_code = execvp(command, argument_list);
@@ -182,4 +176,21 @@ int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
     //Reference https://man7.org/linux/man-pages/man2/fork.2.html
     //Reference https://www.digitalocean.com/community/tutorials/execvp-function-c-plus-plus
     //Reference https://www.ibm.com/docs/en/zos/2.3.0?topic=functions-waitpid-wait-specific-child-process-end
+}
+
+int change_directory(char* argument_list[MAX_IN_COMMAND],int args){
+    int status_code;
+    if(args > 2){
+        printf("Ivalid cd command\n");
+    }else if(argument_list[1] == NULL){
+        status_code = chdir(getenv("HOME"));
+        //Nessesy to dected the NULL argument before the using the strcmp, dected the cd with nothing at back
+    }else if(!strcmp(argument_list[1],"~")){
+        status_code = chdir(getenv("HOME"));
+    }else{
+        status_code = chdir(argument_list[1]);
+        //Run the regular change director
+    }
+    return status_code;
+    //Return the status code for the status check
 }
