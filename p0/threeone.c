@@ -152,12 +152,13 @@ int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
     int status;
     pid = fork();
     // printf("PID: %d\n",pid);
+    int status_code;
     switch (pid) {
         case -1:
             perror("fork");
             exit(EXIT_FAILURE);
         case 0:{
-                int status_code;
+                // int status_code;
                 if(!strcmp(command,"cd")){
                     status_code = change_directory(argument_list,args);
                     //Use for the cd command processes
@@ -204,7 +205,8 @@ int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
                         //Creat the char pointer tp stpre the command
                         string_casting(argument_list,casting_command);
                         //Make all the command to in argument_list become one sentence in casting_command
-                        add_bg_process(pid,casting_command);
+                        if(status_code != -1)
+                            add_bg_process(pid,casting_command);
                         //Add the PID and the command into the struct pointer
                         printf("PID_bg: %d Command: %s\n",pid,casting_command);
                         free(casting_command);
