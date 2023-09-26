@@ -181,41 +181,28 @@ int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
                 }
             }
         default:
-            // do {
-            //     if ((pid = waitpid(pid, &status, WNOHANG)) == -1)
-            //         perror("wait() error");
-            //     // else if (pid == 0) {
-            //     //     time(&t);
-            //     //     printf("child is still running at %s", ctime(&t));
-            //     //     sleep(1);
-            //     // }
-            //     else {
-            //         if (WIFEXITED(status));
-            //         else puts("child did not exit successfully");
-            //     }
-            // } while (pid == 0);
-                    if(!strcmp(command,"bg")){
-                        printf("PID_bg: %d\n",pid);
-                        printf("bg wait\n");
-                        // waitpid(0, &status, WNOHANG);
-                        //pid_t waitpid(pid_t pid, int *status_ptr, int options); 
-                        //WNOHANG mant dont wait for the child process to end
-                        char *casting_command;
-                        casting_command = malloc(sizeof(MAX_IN_CHARS)+1);
-                        //Creat the char pointer tp stpre the command
-                        string_casting(argument_list,casting_command);
-                        //Make all the command to in argument_list become one sentence in casting_command
-                        if(status_code != -1)
-                            add_bg_process(pid,casting_command);
-                        //Add the PID and the command into the struct pointer
-                        printf("PID_bg: %d Command: %s\n",pid,casting_command);
-                        free(casting_command); // add
-                    }else{
-                        printf("PID3: %d\n",pid);
-                        waitpid(pid,&status,0);
-                        //pid_t waitpid(pid_t pid, int *status_ptr, int options); 
-                        //0 here mean to wait for the child process 
-                    }
+            if(!strcmp(command,"bg")){
+                printf("PID_bg: %d\n",pid);
+                printf("bg wait\n");
+                // waitpid(0, &status, WNOHANG);
+                //pid_t waitpid(pid_t pid, int *status_ptr, int options); 
+                //WNOHANG mant dont wait for the child process to end
+                char *casting_command;
+                casting_command = malloc(sizeof(MAX_IN_CHARS)+1);
+                //Creat the char pointer tp stpre the command
+                string_casting(argument_list,casting_command);
+                //Make all the command to in argument_list become one sentence in casting_command
+                if(status_code != -1)
+                    add_bg_process(pid,casting_command);
+                    //Add the PID and the command into the struct pointer
+                    printf("PID_bg: %d Command: %s\n",pid,casting_command);
+                    free(casting_command); // add
+            }else{
+                printf("PID3: %d\n",pid);
+                waitpid(pid,&status,0);
+                //pid_t waitpid(pid_t pid, int *status_ptr, int options); 
+                //0 here mean to wait for the child process 
+            }
                     
             // waitpid(pid,&status,0);
             //pid_t waitpid(pid_t pid, int *status_ptr, int options); 
@@ -311,18 +298,14 @@ void check_bg_process_status(){
             current_p = current_p->next;
         }
     }
-    fflush(stdout);
+    fflush(stdout); // Make sure the output has being printout directly
     print_prompt();
 }
 
 void handle_sigchld(int sig){
     (void)sig;
     check_bg_process_status();
-    // int status = 0;
-    // status = check_bg_process_status();
-    // if(status == 1)
     // print_prompt();
     fflush(stdout); // add
     child_terminated = 1;
-    // printf(" ");
 }
