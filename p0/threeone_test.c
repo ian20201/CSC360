@@ -192,11 +192,14 @@ int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
                 //Creat the char pointer tp stpre the command
                 string_casting(argument_list,casting_command);
                 //Make all the command to in argument_list become one sentence in casting_command
-                if(status_code != -1)
+                if(status_code != -1){
                     add_bg_process(pid,casting_command);
                     //Add the PID and the command into the struct pointer
-                    printf("PID_bg: %d Command: %s\n",pid,casting_command);
-                    free(casting_command); // add
+                    printf("PID_bg: %d Command: %s Added\n",pid,casting_command);
+                }
+                if(!strcmp(argument_list[0],"cat"))
+                    waitpid(pid,&status,0);
+                free(casting_command); // add
             }else{
                 printf("PID3: %d\n",pid);
                 waitpid(pid,&status,0);
