@@ -129,6 +129,7 @@ int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
     char* command = split[0];
     char* argument_list[args+1];
     if(!strcmp(command,"bg")){
+        // printf("bg list \n");
         for(int counter = 1; counter < args; counter++){
         argument_list[counter-1] = malloc(sizeof(split[counter])+1);
         strcpy(argument_list[counter-1],split[counter]);
@@ -146,7 +147,7 @@ int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
 
     int status;
     pid = fork();
-    int status_code; // Use to Record the System status
+    int status_code = 0; // Use to Record the System status
     switch (pid) {
         case -1:
             perror("fork");
@@ -158,6 +159,7 @@ int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
                 }else if(!strcmp(command,"bg")){
                     status_code = execvp(argument_list[0], argument_list);
                     //Run the bg command in back ground
+                    printf("\n");
                 }else{
                     status_code = execvp(command, argument_list);
                     //Run the original command for ls or other command
@@ -170,6 +172,7 @@ int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
             }
         default:
             if(!strcmp(command,"bg")){
+                // printf("BG status %d \n",status_code);
                 char *casting_command;
                 casting_command = malloc(sizeof(MAX_IN_CHARS)+1);
                 //Creat the char pointer tp stpre the command
