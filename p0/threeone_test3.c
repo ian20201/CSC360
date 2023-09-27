@@ -24,7 +24,7 @@ typedef struct bg_process{
 
 bg_process* bg_process_list = NULL;
 int bg_process_list_count = 0;
-volatile sig_atomic_t child_terminated = 0;
+int print_status = 0; //Use to Record the Print Status
 
 void print_prompt();
 void get_directory();
@@ -69,12 +69,12 @@ int main(int argc, char*argv[]){
 void print_prompt(){
     char directory_main[200];
     char hostname_main[200];
-    char* prompt[] = {getlogin(),"@",hostname_main,": ",directory_main," >"};
+    char* prompt[] = {getlogin(),"@",hostname_main,": ",directory_main," > "};
     //getloin() is use to get the Username
     get_directory(directory_main);
     get_hostname(hostname_main);
     //Reset the directoy forevery execution
-    printf("%s%s%s%s%s%s ",prompt[0],prompt[1],prompt[2],prompt[3],prompt[4],prompt[5]);
+    printf("%s%s%s%s%s%s",prompt[0],prompt[1],prompt[2],prompt[3],prompt[4],prompt[5]);
     //Print the current working directory
 }
 
@@ -109,9 +109,7 @@ void getinput(char* input){
             }
             // Split all the command from the Input line to the array
         }   
-
         free(tmpinput);
-
         if(!strcmp(split[0],"exit")){
             printf("Exit the System\n");
             exit(0);
@@ -131,7 +129,6 @@ int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
     char* command = split[0];
     char* argument_list[args+1];
     if(!strcmp(command,"bg")){
-        // printf("bg list \n");
         for(int counter = 1; counter < args; counter++){
         argument_list[counter-1] = malloc(sizeof(split[counter])+1);
         strcpy(argument_list[counter-1],split[counter]);
@@ -146,78 +143,59 @@ int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
         }
         argument_list[args] = NULL;  
     }
-      
-    // printf("%s %s\n",argument_list[0],argument_list[1]);
 
     int status;
     pid = fork();
-    // printf("PID: %d\n",pid);
-    int status_code;
+    int status_code; // Use to Record the System status
     switch (pid) {
         case -1:
             perror("fork");
             exit(EXIT_FAILURE);
         case 0:{
-                // int status_code;
                 if(!strcmp(command,"cd")){
                     status_code = change_directory(argument_list,args);
-                    //Use for the cd command processes
-                    // printf("PID: %d\n",pid);    
+                    //Use for the cd command processes  
                 }else if(!strcmp(command,"bg")){
-                    printf("bg command found\n");
-                    // char *test[] = {"cat","test.txt",NULL};
-                    // status_code = execvp(test[0], test);
                     status_code = execvp(argument_list[0], argument_list);
                     //Run the bg command in back ground
-                    exit(0);
                 }else{
                     status_code = execvp(command, argument_list);
                     //Run the original command for ls or other command
                 }                
-                // status_code = execvp(command, argument_list);
+
                 if (status_code == -1) {
-                    printf("Terminated Incorrectly\n");
-                    return 1;
+                    printf("Ivalid Command\n");
+                    exit(0);
                 }
             }
         default:
-            // do {
-            //     if ((pid = waitpid(pid, &status, WNOHANG)) == -1)
-            //         perror("wait() error");
-            //     // else if (pid == 0) {
-            //     //     time(&t);
-            //     //     printf("child is still running at %s", ctime(&t));
-            //     //     sleep(1);
-            //     // }
-            //     else {
-            //         if (WIFEXITED(status));
-            //         else puts("child did not exit successfully");
-            //     }
-            // } while (pid == 0);
-                    if(!strcmp(command,"bg")){
-                        printf("PID_bg: %d\n",pid);
-                        printf("bg wait\n");
-                        // waitpid(0, &status, WNOHANG);
-                        //pid_t waitpid(pid_t pid, int *status_ptr, int options); 
-                        //WNOHANG mant dont wait for the child process to end
-                        char *casting_command;
-                        casting_command = malloc(sizeof(MAX_IN_CHARS)+1);
-                        //Creat the char pointer tp stpre the command
-                        string_casting(argument_list,casting_command);
-                        //Make all the command to in argument_list become one sentence in casting_command
-                        if(status_code != -1)
-                            add_bg_process(pid,casting_command);
-                        //Add the PID and the command into the struct pointer
-                        printf("PID_bg: %d Command: %s\n",pid,casting_command);
-                        free(casting_command); // add
-                    }else{
-                        printf("PID3: %d\n",pid);
-                        waitpid(pid,&status,0);
-                        //pid_t waitpid(pid_t pid, int *status_ptr, int options); 
-                        //0 here mean to wait for the child process 
+            if(!strcmp(command,"bg")){
+                char *casting_command;
+                casting_command = malloc(sizeof(MAX_IN_CHARS)+1);
+                //Creat the char pointer tp stpre the command
+                string_casting(argument_list,casting_command);
+                    //Make all the command to in argument_list become one sentence in casting_command
+                if(status_code != -1){
+                    add_bg_process(pid,casting_command);
+                    //Add the PID and the command into the struct pointer
+                    printf("PID: %d Command: %s Added\n",pid,casting_command);
+                }
+                if(argument_list[0] != NULL){
+                    if(!strcmp(argument_list[0],"cat")){
+                    print_status = 1;
+                    waitpid(pid,&status,0);
                     }
-                    
-            // waitpid(pid,&status,0);
+                }else if(argument_list[0] == NULL){
+                    print_status = 1;
+                    waitpid(pid,&status,0);
+                }
+                free(casting_command); // add
+            }else{
+                print_status = 1;
+                waitpid(pid,&status,0);
+                //pid_t waitpid(pid_t pid, int *status_ptr, int options); 
+                //0 here mean to wait for the child process 
+            }
             //pid_t waitpid(pid_t pid, int *status_ptr, int options); 
             //0 here mean to wait for the child process   
     }            
@@ -231,7 +209,7 @@ int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
 int change_directory(char* argument_list[MAX_IN_COMMAND],int args){
     int status_code;
     if(args > 2){
-        printf("Ivalid cd command\n");
+        printf("Ivalid cd Command\n");
     }else if(argument_list[1] == NULL){
         status_code = chdir(getenv("HOME"));
         //Nessesy to dected the NULL argument before the using the strcmp, dected the cd with nothing at back
@@ -285,14 +263,16 @@ void remove_bg_process(bg_process *target_process){
             tmp->next = target_process->next;
         }
         free(target_process);
-        bg_process_list_count--;
     }
+    bg_process_list_count--;
 }
 
 void display_bg_process(){
+    int job_count = bg_process_list_count;
     printf("\nBackgroud Processes: \n");
     for(bg_process* tmp = bg_process_list;tmp; tmp = tmp->next){
-        printf("PID %d: Command %s\n",tmp->pid, tmp->command);
+        printf("PID %d: Command %s JobNumbers: %d\n",tmp->pid, tmp->command,job_count);
+        job_count--;
     }
     printf("Total Background Jobs: %d\n\n", bg_process_list_count);
 }
@@ -303,7 +283,7 @@ void check_bg_process_status(){
     while (current_p)
     {
         if(waitpid(current_p->pid, &status, WNOHANG) != 0){
-            printf("\nPID %d: %s has terminated. \n", current_p->pid, current_p->command);
+            printf("\nPID %d: %s has Terminated. \n", current_p->pid, current_p->command);
             bg_process* tmp = current_p;
             current_p = current_p->next;
             remove_bg_process(tmp);
@@ -311,18 +291,17 @@ void check_bg_process_status(){
             current_p = current_p->next;
         }
     }
-    fflush(stdout);
-    print_prompt();
+    if(print_status == 0 ){
+        fflush(stdout);
+        print_prompt();
+    }{
+        print_status = 0;
+    }
+    //Use to find out if the prompt need to be print of this execution or not
 }
 
 void handle_sigchld(int sig){
     (void)sig;
     check_bg_process_status();
-    // int status = 0;
-    // status = check_bg_process_status();
-    // if(status == 1)
-    // print_prompt();
-    fflush(stdout); // add
-    child_terminated = 1;
-    // printf(" ");
+    fflush(stdout); // Use the print the output immediately 
 }
