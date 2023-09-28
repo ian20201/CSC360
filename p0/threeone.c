@@ -39,6 +39,7 @@ void remove_bg_process(bg_process *target_process);
 void display_bg_process();
 void check_bg_process_status();
 void handle_sigchld(int sig);
+void sigquit();
 
 
 int main(int argc, char*argv[]){
@@ -168,6 +169,8 @@ void use_fork_bg(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
     pid_t pid;
     char* command = split[0];
     char* argument_list[args+1];
+    int fd[2];
+    char msg[4]; 
     for(int counter = 1; counter < args; counter++){
         argument_list[counter-1] = malloc(sizeof(split[counter])+1);
         strcpy(argument_list[counter-1],split[counter]);
@@ -182,10 +185,12 @@ void use_fork_bg(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
             exit(EXIT_FAILURE);
         case 0:{
                 if (execvp(argument_list[0], argument_list) == -1) {
+                    // raise(SIGQUIT);
+                    kill(getppid(),SIGUSR1);
                     perror("Ivalid Command");
-                    exit(0);
+                    exit(0);                    
                 }
-                exit(0);
+                // exit(0);
             }
         default:{
             char *casting_command;
@@ -203,6 +208,17 @@ void use_fork_bg(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
                 print_status = 1;
                 waitpid(pid,&status,0);
             }
+
+            // printf("\nPARENT: sending SIGQUIT\n\n");
+            // kill(pid, SIGQUIT);
+            // int sig = signal(SIGQUIT, sigquit);
+            
+            if((signal(SIGUSR1, sigquit) == SIG_ERR)){
+                printf("SIGERR\n");
+                // print_status = 1;
+                // waitpid(pid,&status,0);
+            }
+            // signal(SIGQUIT, sigquit);
             free(casting_command);
         }  
     }            
@@ -321,10 +337,15 @@ void check_bg_process_status(){
     //Use to find out if the prompt need to be print of this execution or not
 }
 
-void handle_sigchld(int sig){
-    (void)sig;
-    if(print_status == 0 ){
-        check_bg_process_status();
-    } 
+void handle_sigchld(int signal){
+    (void)signal;
+    check_bg_process_status();
     fflush(stdout); // Use the print the output immediately
+}
+
+void sigquit(){
+    print_status = 1;
+    waitpid(0,0,0);
+    printf("\n");
+    // exit(0);
 }
