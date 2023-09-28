@@ -161,7 +161,7 @@ int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
                     //Run the bg command in back ground
                     printf("\n");
                 }else{
-                    status_code = execvp(command, argument_list);
+                    // status_code = execvp(command, argument_list);
                     //Run the original command for ls or other command
                 }                
 
@@ -172,7 +172,8 @@ int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
             }
         default:
             if(!strcmp(command,"bg")){
-                // printf("BG status %d \n",status_code);
+                status_code = execvp(command, argument_list);
+                printf("BG status %d \n",status_code);
                 char *casting_command;
                 casting_command = malloc(sizeof(MAX_IN_CHARS)+1);
                 //Creat the char pointer tp stpre the command
@@ -183,24 +184,23 @@ int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
                     //Add the PID and the command into the struct pointer
                     printf("PID: %d Command: %s Added\n",pid,casting_command);
                 }
+                printf("BG status %d \n",status_code);
                 if(argument_list[0] != NULL){
                     if(!strcmp(argument_list[0],"cat")){
                     print_status = 1;
                     waitpid(pid,&status,0);
                     }
-                }else if(argument_list[0] == NULL){
+                }else if((argument_list[0] == NULL) && (status_code == -1)){
                     print_status = 1;
                     waitpid(pid,&status,0);
                 }
-                free(casting_command); // add
+                free(casting_command); 
             }else{
                 print_status = 1;
                 waitpid(pid,&status,0);
                 //pid_t waitpid(pid_t pid, int *status_ptr, int options); 
                 //0 here mean to wait for the child process 
-            }
-            //pid_t waitpid(pid_t pid, int *status_ptr, int options); 
-            //0 here mean to wait for the child process   
+            }   
     }            
     for(int counter = 0; counter < args; counter++)
         free(argument_list[counter]);
@@ -213,6 +213,7 @@ int change_directory(char* argument_list[MAX_IN_COMMAND],int args){
     int status_code;
     if(args > 2){
         printf("Ivalid cd Command\n");
+        exit(0);
     }else if(argument_list[1] == NULL){
         status_code = chdir(getenv("HOME"));
         //Nessesy to dected the NULL argument before the using the strcmp, dected the cd with nothing at back
