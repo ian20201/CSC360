@@ -30,7 +30,8 @@ void print_prompt();
 void get_directory();
 void get_hostname();
 void getinput(char* input);
-int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args);
+void use_fork_general(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args);
+void use_fork_bg(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args);
 int change_directory(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args);
 void string_casting(char* command[MAX_IN_COMMAND],char* return_command);
 bg_process* add_bg_process(int pid, char* command);
@@ -117,86 +118,93 @@ void getinput(char* input){
             display_bg_process();
         }else if(!strcmp(split[0],"cd")){
             change_directory(split,counter);
+        }else if(!strcmp(split[0],"bg")){
+            use_fork_bg(split,counter);
         }else{
-            use_fork(split,counter);
+            use_fork_general(split,counter);
         }
     }else{
        printf("\n"); 
     }
 }
 
-
-int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
+void use_fork_general(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
     pid_t pid;
     char* command = split[0];
     char* argument_list[args+1];
-    if(!strcmp(command,"bg")){
-        // printf("bg list \n");
-        for(int counter = 1; counter < args; counter++){
-        argument_list[counter-1] = malloc(sizeof(split[counter])+1);
-        strcpy(argument_list[counter-1],split[counter]);
-        //Save all the command into the argument_list for bg    
-        }
-        argument_list[args-1] = NULL;
-    }else{
-        for(int counter = 0; counter < args; counter++){
+    for(int counter = 0; counter < args; counter++){
         argument_list[counter] = malloc(sizeof(split[counter+1])+1);
         strcpy(argument_list[counter],split[counter]);
         //Save all the command into the argument_list 
-        }
-        argument_list[args] = NULL;  
     }
-
+    argument_list[args] = NULL;
     int status;
     pid = fork();
-    int status_code = 0; // Use to Record the System status
     switch (pid) {
         case -1:
             perror("fork");
             exit(EXIT_FAILURE);
         case 0:{
-                if(!strcmp(command,"bg")){
-                    status_code = execvp(argument_list[0], argument_list);
-                    //Run the bg command in back ground
-                    printf("\n");
-                }else{
-                    status_code = execvp(command, argument_list);
-                    //Run the original command for ls or other command
-                }                
-
-                if (status_code == -1) {
+                if (execvp(command, argument_list) == -1) {
                     printf("Ivalid Command\n");
                     exit(0);
                 }
             }
-        default:
-            if(!strcmp(command,"bg")){
-                char *casting_command;
-                casting_command = malloc(sizeof(MAX_IN_CHARS)+1);
-                //Creat the char pointer tp stpre the command
-                string_casting(argument_list,casting_command);
-                    //Make all the command to in argument_list become one sentence in casting_command
-                if(status_code != -1){
-                    add_bg_process(pid,casting_command);
-                    //Add the PID and the command into the struct pointer
-                    printf("PID: %d Command: %s Added\n",pid,casting_command);
+        default:{
+            print_status = 1;
+            waitpid(pid,&status,0);
+            //pid_t waitpid(pid_t pid, int *status_ptr, int options); 
+            //0 here mean to wait for the child process 
+        }
+    }            
+    for(int counter = 0; counter < args; counter++)
+        free(argument_list[counter]);
+    //Reference https://man7.org/linux/man-pages/man2/fork.2.html
+    //Reference https://www.digitalocean.com/community/tutorials/execvp-function-c-plus-plus
+    //Reference https://www.ibm.com/docs/en/zos/2.3.0?topic=functions-waitpid-wait-specific-child-process-end
+}
+
+void use_fork_bg(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
+    pid_t pid;
+    char* command = split[0];
+    char* argument_list[args+1];
+    for(int counter = 1; counter < args; counter++){
+        argument_list[counter-1] = malloc(sizeof(split[counter])+1);
+        strcpy(argument_list[counter-1],split[counter]);
+        //Save all the command into the argument_list for bg    
+    }
+    argument_list[args-1] = NULL;
+    int status;
+    pid = fork();
+    switch (pid) {
+        case -1:
+            perror("fork");
+            exit(EXIT_FAILURE);
+        case 0:{
+                if (execvp(argument_list[0], argument_list) == -1) {
+                    perror("Ivalid Command");
+                    exit(0);
                 }
-                if(argument_list[0] != NULL){
-                    if(!strcmp(argument_list[0],"cat")){
-                    print_status = 1;
-                    waitpid(pid,&status,0);
-                    }
-                }else if((argument_list[0] == NULL) && (status_code == -1)){
-                    print_status = 1;
-                    waitpid(pid,&status,0);
-                }
-                free(casting_command); 
-            }else{
+                exit(0);
+            }
+        default:{
+            char *casting_command;
+            casting_command = malloc(sizeof(MAX_IN_CHARS)+1);
+            //Creat the char pointer tp stpre the command
+            string_casting(argument_list,casting_command);
+            //Make all the command to in argument_list become one sentence in casting_command
+            add_bg_process(pid,casting_command);
+            //Add the PID and the command into the struct pointer
+            printf("PID: %d Command: %s Added\n",pid,casting_command);
+            if(argument_list[0] == NULL){
                 print_status = 1;
                 waitpid(pid,&status,0);
-                //pid_t waitpid(pid_t pid, int *status_ptr, int options); 
-                //0 here mean to wait for the child process 
-            }   
+            }else if(!strcmp(argument_list[0],"cat")){
+                print_status = 1;
+                waitpid(pid,&status,0);
+            }
+            free(casting_command);
+        }  
     }            
     for(int counter = 0; counter < args; counter++)
         free(argument_list[counter]);
@@ -206,7 +214,6 @@ int use_fork(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
 }
 
 int change_directory(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
-
     char* argument_list[args+1];
     for(int tmpcounter = 0; tmpcounter < args; tmpcounter++){
         argument_list[tmpcounter] = malloc(sizeof(split[tmpcounter+1])+1);
@@ -214,7 +221,6 @@ int change_directory(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
         //Save all the command into the argument_list 
     }
     argument_list[args] = NULL;
-    
     int status_code;
     if(args > 2){
         printf("Ivalid cd Command\n");
@@ -305,10 +311,11 @@ void check_bg_process_status(){
             current_p = current_p->next;
         }
     }
+    // printf("PS3E %d\n",error_status);
     if(print_status == 0 ){
         fflush(stdout);
         print_prompt();
-    }else{
+    }else if(print_status == 1){
         print_status = 0;
     }
     //Use to find out if the prompt need to be print of this execution or not
@@ -316,6 +323,8 @@ void check_bg_process_status(){
 
 void handle_sigchld(int sig){
     (void)sig;
-    check_bg_process_status();
-    fflush(stdout); // Use the print the output immediately 
+    if(print_status == 0 ){
+        check_bg_process_status();
+    } 
+    fflush(stdout); // Use the print the output immediately
 }
