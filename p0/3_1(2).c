@@ -212,20 +212,20 @@ void display_prompt() {
 
 void handle_sigchld(int sig) {
     (void)sig; // 避免出现未使用的参数
-    // check_bg_processes();
-    if(child_terminated == 0){
-        check_bg_processes();
-        // child_terminated = 0;
-    }else{
+    check_bg_processes();
+    // if(child_terminated == 0){
+    //     check_bg_processes();
+    //     // child_terminated = 0;
+    // }else{
       
    
-    }
+    // }
     
 }
 
 void sigquit(){
-    
-    error_bg = 1;
-
-    
+    // error_bg = 1;
+    child_terminated == 1;
+    waitpid(0,0,0);
+    printf("\n");
 }
