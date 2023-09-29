@@ -39,7 +39,7 @@ void remove_bg_process(bg_process *target_process);
 void display_bg_process();
 void check_bg_process_status();
 void handle_sigchld(int sig);
-void sigquit();
+void errsig();
 
 
 int main(int argc, char*argv[]){
@@ -190,7 +190,6 @@ void use_fork_bg(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
                     perror("Ivalid Command");
                     exit(0);                    
                 }
-                // exit(0);
             }
         default:{
             char *casting_command;
@@ -208,17 +207,8 @@ void use_fork_bg(char split[MAX_IN_COMMAND][MAX_IN_CHARS],int args){
                 print_status = 1;
                 waitpid(pid,&status,0);
             }
-
-            // printf("\nPARENT: sending SIGQUIT\n\n");
-            // kill(pid, SIGQUIT);
-            // int sig = signal(SIGQUIT, sigquit);
-            
-            if((signal(SIGUSR1, sigquit) == SIG_ERR)){
-                printf("SIGERR\n");
-                // print_status = 1;
-                // waitpid(pid,&status,0);
-            }
-            // signal(SIGQUIT, sigquit);
+            signal(SIGUSR1, errsig);
+            //Use to detceted the error signal from the child process
             free(casting_command);
         }  
     }            
@@ -327,7 +317,6 @@ void check_bg_process_status(){
             current_p = current_p->next;
         }
     }
-    // printf("PS3E %d\n",error_status);
     if(print_status == 0 ){
         fflush(stdout);
         print_prompt();
@@ -343,9 +332,8 @@ void handle_sigchld(int signal){
     fflush(stdout); // Use the print the output immediately
 }
 
-void sigquit(){
+void errsig(){
     print_status = 1;
     waitpid(0,0,0);
     printf("\n");
-    // exit(0);
 }
