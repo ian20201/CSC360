@@ -1,0 +1,41 @@
+Q1
+    The total number of thread = n(number of train) + 1(main) 
+    The train thread will load and run the train and it will send the signal to the main thread when the 
+    train is loaded. The main thread will sort the train base on ID, Priority, HeadingDirection and LoadingTime and run them.
+    When the train is loaded it will releas the train base on the release rule and lock the corssing route when thare is a train on 
+    on the run.
+Q2
+    All the train is running independently.
+Q3
+    At least 6 mutexes one for train and one for the crossing route, the mutex for the train will prvent the train thread to be 
+    iterupted by any unauthorized process. The mutex for the corssing route will prevent the unauthorized train to get on the train and
+    loce the the route when there is the train running on the route. Ther is the list for WestH,WestL,EastH,EastL and each of them have
+    to use the mutex to protect the loaded train information.
+Q4
+    The main thread will always running and it will sort the train base on ID, Priority, HeadingDirection and LoadingTime and run them. 
+    Than send the loaded train to the crossing route when they are ready.
+Q5
+    The linklist will repersent the station, when the train is loaded it will be put into WestH,WestL,EastH,EastL due its status, since
+    the linklist is easiler to save this kind of linear structure
+Q6
+    I will use mutex on each train thread to protect the data.
+Q7
+    At least two convars one sending the signal says the train is loaded and ready to go which will react with with the trains mutex.
+    The other one is to tell the system there is a train on the crossing route and react with the crossing mutex to lock the route to
+    prevent unauthorized accesses.
+Q8
+struct Train{ID, Priority,HeadingDirection,LoadingTime,CrossingTime}Train;
+main{
+    FILE *sourcefile;//detect the input 
+    int TrainCount = getTrainNumber(sourcefile);
+    int crossNumber = 0;
+    while(fgets (line, MAX_IN_CHARS, sourcefile)){//Read through each line, stop at the end.
+        char line[MAX_IN_CHARS];
+        int currenTrain = (struct Train*)malloc(sizeof(struct t));
+        sort_input(line,currenTrain);//Sorting the input from the file by it's ID, Priority,HeadingDirection,LoadingTime,CrossingTime
+        pthread_create(ThreadName[TrainCount],NULL,runTrain,currenTrain);//runTrina is the funtion that will cotrol loading of and runing of the train
+    }
+    while (crossNumber < TrainCount){
+       releaseTrain()//This function will releas the train when they finsih loading and base on the release rule lock the route when a train is corssing 
+       crossNumber++;}
+}
