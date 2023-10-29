@@ -1,13 +1,13 @@
 .phony all:
-all: threeone
+all: mtrain
 
-threeone:
+mtrain:
 	gcc mtrain.c -o A2 -lpthread
 
 .phony gdb:
-gdb: threeone_gdb
+gdb: mtrain_gdb
 
-threeone_gdb:
+mtrain_gdb:
 	gcc -g mtrain.c -o A2 -lpthread
 
 
