@@ -5,7 +5,7 @@
 2. **Time Calculation**:
    - The function `elapsed_time` calculates the time elapsed since the beginning of the program using the `gettimeofday` function.
 3. **Queue Management**:
-   - I've implemented various functions (`add_to_queue`, `remove_from_queue`, `queue_length`, `peek_queue`, `sort_queue`) for managing the linked list which behaves as a queue. This queue holds trains ready to be scheduled. Which is different from my original though the List is not repersent station anymore
+   - I've implemented various functions (`add_to_queue`, `remove_from_queue`, `queue_length`, `peek_queue`, `sort_queue`) for managing the linked list which behaves as a queue. This queue holds trains ready to be scheduled. Which is different from my original though the List is not repersent station anymore.
 4. **Vehicle Thread**:
    - The function `vehicle_thread` is the main logic where each train (as a thread) waits for its turn to get scheduled based on its priority and other conditions.
    - When a train is ready (after its loading time), it is added to the queue.
