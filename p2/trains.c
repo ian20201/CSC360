@@ -1,7 +1,7 @@
 //Name : Ian Chen
 //V-Number : V00887293
 //Date : 2023-10-10
-//CSC 360 Assignment 2
+//CSC360 p2
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
@@ -37,6 +37,82 @@ int same_route_count = 0;  // Counter for vehicles heading in the same direction
 
 struct timeval init_time;  // Timestamp marking the beginning of the program.
 int next_vehicle_id = 0;   // ID for the next vehicle to be processed.
+
+double elapsed_time();
+void add_to_queue(Vehicle* v);
+Vehicle* remove_from_queue();
+int queue_length();
+Vehicle* peek_queue();
+int queue_length();
+Vehicle* peek_queue();
+int compare_vehicles(const void* a, const void* b);
+void sort_queue();
+void* vehicle_thread(void* arg);
+
+int main(int argc, char* argv[]) {
+    // Check if the correct number of command line arguments is provided.
+    if (argc != 2) {
+        // Print the correct usage of the program.
+        printf("Usage: %s <input_file>\n", argv[0]);
+        // Exit with status code 1 to indicate an error.
+        exit(1);
+    }
+
+    // Get the current time and store it in init_time.
+    gettimeofday(&init_time, NULL);
+
+    // Open the input file for reading.
+    FILE* file = fopen(argv[1], "r");
+    // Check if the file was opened successfully.
+    if (!file) {
+        // Print an error message and exit with status code -1.
+        perror("Error opening file");
+        return -1;
+    }
+
+    int ch;
+    int vehicle_num = 0;
+    // Count the number of vehicles (lines) in the input file.
+    while ((ch = fgetc(file)) != EOF) {
+        if (ch == '\n') {
+            vehicle_num++;
+        }
+    }
+    vehicle_num++;
+    // Rewind the file pointer back to the beginning of the file.
+    rewind(file);
+
+    // Declare an array of Vehicle structures.
+    Vehicle vehicles[vehicle_num];
+
+    // Populate the vehicles array with data from the input file.
+    for (int i = 0; i < vehicle_num; i++) {
+        char dir;
+        // Read the vehicle's direction, preparation duration, and travel duration from the file.
+        fscanf(file, " %c %d %d", &dir, &vehicles[i].prep_duration, &vehicles[i].travel_duration);
+        vehicles[i].vid = i;
+        // Set the vehicle's route based on its direction.
+        vehicles[i].route = dir == 'w' || dir == 'W' ? 'W' : 'E';
+        // Set the vehicle's precedence based on its direction.
+        vehicles[i].precedence = dir == 'w' || dir == 'e' ? 0 : 1;
+    }
+    // Close the input file.
+    fclose(file);
+
+    // Declare an array of thread identifiers.
+    pthread_t threads[vehicle_num];
+    // Create a thread for each vehicle.
+    for (int i = 0; i < vehicle_num; i++) {
+        pthread_create(&threads[i], NULL, vehicle_thread, &vehicles[i]);
+    }
+
+    // Wait for all threads to complete.
+    for (int i = 0; i < vehicle_num; i++) {
+        pthread_join(threads[i], NULL);
+    }
+
+    return 0;
+}
 
 // Function to calculate the time elapsed since the beginning of the program.
 double elapsed_time() {
@@ -188,70 +264,4 @@ void* vehicle_thread(void* arg) {
     pthread_mutex_unlock(&mtx);
 
     return NULL;
-}
-
-int main(int argc, char* argv[]) {
-    // Check if the correct number of command line arguments is provided.
-    if (argc != 2) {
-        // Print the correct usage of the program.
-        printf("Usage: %s <input_file>\n", argv[0]);
-        // Exit with status code 1 to indicate an error.
-        exit(1);
-    }
-
-    // Get the current time and store it in init_time.
-    gettimeofday(&init_time, NULL);
-
-    // Open the input file for reading.
-    FILE* file = fopen(argv[1], "r");
-    // Check if the file was opened successfully.
-    if (!file) {
-        // Print an error message and exit with status code -1.
-        perror("Error opening file");
-        return -1;
-    }
-
-    int ch;
-    int vehicle_num = 0;
-    // Count the number of vehicles (lines) in the input file.
-    while ((ch = fgetc(file)) != EOF) {
-        if (ch == '\n') {
-            vehicle_num++;
-        }
-    }
-    vehicle_num++;
-    // Rewind the file pointer back to the beginning of the file.
-    rewind(file);
-
-    // Declare an array of Vehicle structures.
-    Vehicle vehicles[vehicle_num];
-
-    // Populate the vehicles array with data from the input file.
-    for (int i = 0; i < vehicle_num; i++) {
-        char dir;
-        // Read the vehicle's direction, preparation duration, and travel duration from the file.
-        fscanf(file, " %c %d %d", &dir, &vehicles[i].prep_duration, &vehicles[i].travel_duration);
-        vehicles[i].vid = i;
-        // Set the vehicle's route based on its direction.
-        vehicles[i].route = dir == 'w' || dir == 'W' ? 'W' : 'E';
-        // Set the vehicle's precedence based on its direction.
-        vehicles[i].precedence = dir == 'w' || dir == 'e' ? 0 : 1;
-    }
-    // Close the input file.
-    fclose(file);
-
-    // Declare an array of thread identifiers.
-    pthread_t threads[vehicle_num];
-    // Create a thread for each vehicle.
-    for (int i = 0; i < vehicle_num; i++) {
-        pthread_create(&threads[i], NULL, vehicle_thread, &vehicles[i]);
-    }
-
-    // Wait for all threads to complete.
-    for (int i = 0; i < vehicle_num; i++) {
-        pthread_join(threads[i], NULL);
-    }
-
-    // Exit the program with status code 0 (success).
-    return 0;
 }

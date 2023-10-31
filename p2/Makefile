@@ -1,14 +1,14 @@
 .phony all:
-all: mtrain
+all: trains
 
-mtrain:
-	gcc mtrain.c -o A2 -lpthread
+trains:
+	gcc trains.c -o A2 -lpthread
 
 .phony gdb:
-gdb: mtrain_gdb
+gdb: trains_gdb
 
-mtrain_gdb:
-	gcc -g mtrain.c -o A2 -lpthread
+trains_gdb:
+	gcc -g trains.c -o A2 -lpthread
 
 
 .PHONY clean:
