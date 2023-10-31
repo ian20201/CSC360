@@ -54,7 +54,6 @@ int main(int argc, char* argv[]) {
     if (argc != 2) {
         // Print the correct usage of the program.
         printf("Usage: %s <input_file>\n", argv[0]);
-        // Exit with status code 1 to indicate an error.
         exit(1);
     }
 
@@ -66,15 +65,15 @@ int main(int argc, char* argv[]) {
     // Check if the file was opened successfully.
     if (!file) {
         // Print an error message and exit with status code -1.
-        perror("Error opening file");
+        perror("Error on opening file");
         return -1;
     }
 
-    int ch;
+    int ch_c;
     int vehicle_num = 0;
     // Count the number of vehicles (lines) in the input file.
-    while ((ch = fgetc(file)) != EOF) {
-        if (ch == '\n') {
+    while ((ch_c = fgetc(file)) != EOF) {
+        if (ch_c == '\n') {
             vehicle_num++;
         }
     }
