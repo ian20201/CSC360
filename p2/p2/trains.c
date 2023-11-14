@@ -86,9 +86,9 @@ int main(int argc, char* argv[]) {
     // Populate the vehicles array with data from the input file.
     for (int i = 0; i < vehicle_num; i++) {
         char dir;
-        // printf("%c\n",dir);
         // Read the vehicle's direction, preparation duration, and travel duration from the file.
         fscanf(file, " %c %d %d", &dir, &vehicles[i].prep_duration, &vehicles[i].travel_duration);
+        printf("%c\n",dir);
         vehicles[i].vid = i;
         // Set the vehicle's route based on its direction.
         vehicles[i].route = dir == 'w' || dir == 'W' ? 'W' : 'E';
@@ -98,6 +98,7 @@ int main(int argc, char* argv[]) {
         }else if(dir == 'W'|| dir == 'E'){
             vehicles[i].precedence = dir == 'w' || dir == 'e' ? 2 : 3;
         }
+        printf("%d\n",vehicles[i].precedence);
     }
     // Close the input file.
     fclose(file);
