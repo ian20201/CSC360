@@ -34,13 +34,13 @@ int print_DiskInfo(int fd,struct stat buffer){
 
     struct superblock_t* superblock;
     superblock = (struct superblock_t*) address;
-    printf("Super Block Information:\n");
-    printf("Blcok Size: %d\n", htons(superblock->block_size));
-    printf("Blcok Count: %d\n",htonl(superblock->file_system_block_count));
-    printf("FAT Starts: %d\n",htonl(superblock->fat_start_block));
-    printf("FAT Blocks: %d\n",htonl(superblock->fat_block_count));
-    printf("Root Directory Starts: %d\n",htonl(superblock->root_dir_start_block));
-    printf("Root Directory Blocks: %d\n",htonl(superblock->root_dir_block_count));
+    printf("Super block information\n");
+    printf("Block size: %d\n", htons(superblock->block_size));
+    printf("Block count: %d\n",htonl(superblock->file_system_block_count));
+    printf("FAT starts: %d\n",htonl(superblock->fat_start_block));
+    printf("FAT blocks: %d\n",htonl(superblock->fat_block_count));
+    printf("Root directory starts: %d\n",htonl(superblock->root_dir_start_block));
+    printf("Root directory blocks: %d\n",htonl(superblock->root_dir_block_count));
 
     int fat_starting_blcok = htonl(superblock->fat_start_block);
     int fat_block_count = htonl(superblock->fat_block_count);
@@ -71,10 +71,10 @@ int print_DiskInfo(int fd,struct stat buffer){
         counter = counter + 4;
     }
 
-    printf("\nFAT Information:\n");
-    printf("Free Blocks: %d\n",available);
-    printf("Reserved Blocks: %d\n",reserved);
-    printf("Allocated Blocks: %d\n",allocated);
+    printf("\nFAT information\n");
+    printf("Free blocks: %d\n",available);
+    printf("Reserved blocks: %d\n",reserved);
+    printf("Allocated blocks: %d\n",allocated);
 
     munmap(address,buffer.st_size);
     // The munmap() function removes the mappings for pages in the range [addr, addr + len) rounding 
