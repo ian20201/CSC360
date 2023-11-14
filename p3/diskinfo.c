@@ -92,6 +92,7 @@ int main(int argc, char* argv[])
 {
     int fd = open(argv[1], O_RDWR);
     struct stat buffer;
+    // Reference: https://stackoverflow.com/questions/56109844/what-is-the-different-between-struct-stat-buffer-and-buffer-in-linux-stat-fun
 
     print_DiskInfo(fd, buffer);  
 }
