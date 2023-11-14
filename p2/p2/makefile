@@ -2,15 +2,15 @@
 all: trains
 
 trains:
-	gcc trains.c -o A2 -lpthread
+	gcc trains.c -o mts -lpthread
 
 .phony gdb:
 gdb: trains_gdb
 
 trains_gdb:
-	gcc -g trains.c -o A2 -lpthread
+	gcc -g trains.c -o mts -lpthread
 
 
 .PHONY clean:
 clean:
-	-rm -rf A2
+	-rm -rf mts

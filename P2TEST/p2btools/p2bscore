@@ -1,0 +1,25 @@
+#!/bin/bash
+
+[ $# -eq 1 ] || { echo "usage: $0 EVAL_FILE"; exit 1; }
+
+item () { score="$(bc <<< "$score + $1 * ($2)")"; }
+
+invalid_archive        () { item ${1:-1.0} -100.0; }
+build                  () { item ${1:-1.0} 2.0; }
+build_with_no_warnings () { item ${1:-1.0} 1.0; }
+input_txt              () { item ${1:-1.0} 1.0; }
+output_format          () { item ${1:-1.0} 1.0; }
+test_student           () { item ${1:-1.0} 1.0; }
+test_basic             () { item ${1:-1.0} 1.0; }
+test_exclusion         () { item ${1:-1.0} 1.0; }
+test_priority          () { item ${1:-1.0} 1.0; }
+test_loading           () { item ${1:-1.0} 1.0; }
+test_index             () { item ${1:-1.0} 1.0; }
+test_direction         () { item ${1:-1.0} 1.0; }
+test_starvation        () { item ${1:-1.0} 1.0; }
+pity                   () { item ${1:-1.0} 1.0; }
+readme                 () { item ${1:-1.0} 2.0; }
+
+score=0.0
+source "$1"
+echo "$(bc <<< "if ($score > 15.00) 15.00 else if ($score < 0.00) 0.00 else $score")"

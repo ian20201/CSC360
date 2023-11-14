@@ -77,7 +77,6 @@ int main(int argc, char* argv[]) {
             vehicle_num++;
         }
     }
-    vehicle_num++;
     // Rewind the file pointer back to the beginning of the file.
     rewind(file);
 
@@ -87,13 +86,18 @@ int main(int argc, char* argv[]) {
     // Populate the vehicles array with data from the input file.
     for (int i = 0; i < vehicle_num; i++) {
         char dir;
+        // printf("%c\n",dir);
         // Read the vehicle's direction, preparation duration, and travel duration from the file.
         fscanf(file, " %c %d %d", &dir, &vehicles[i].prep_duration, &vehicles[i].travel_duration);
         vehicles[i].vid = i;
         // Set the vehicle's route based on its direction.
         vehicles[i].route = dir == 'w' || dir == 'W' ? 'W' : 'E';
         // Set the vehicle's precedence based on its direction.
-        vehicles[i].precedence = dir == 'w' || dir == 'e' ? 0 : 1;
+        if(dir == 'w'|| dir == 'e'){
+            vehicles[i].precedence = dir == 'w' || dir == 'e' ? 0 : 1;
+        }else if(dir == 'W'|| dir == 'E'){
+            vehicles[i].precedence = dir == 'w' || dir == 'e' ? 2 : 3;
+        }
     }
     // Close the input file.
     fclose(file);
@@ -173,6 +177,7 @@ int compare_vehicles(const void* a, const void* b) {
     Vehicle* vehB = *(Vehicle**)b;
 
     if (vehA->precedence != vehB->precedence) {
+        // printf("%d,%d\n",vehB->precedence,vehA->precedence);
         return vehB->precedence - vehA->precedence;
     }
     if (vehA->route == vehB->route) {
@@ -226,7 +231,7 @@ void* vehicle_thread(void* arg) {
 
     // Simulate the preparation duration.
     usleep(v->prep_duration * 100000);
-    printf("00:00:0%.1f Vehicle %d is ready to go %s\n", elapsed_time(), v->vid, (v->route == 'E') ? "East" : "West");
+    printf("00:00:0%.1f Train %d is ready to go %s\n", elapsed_time(), v->vid, (v->route == 'E') ? "East" : "West");
 
     pthread_mutex_lock(&mtx);
     v->set_time = v->prep_duration;
@@ -255,9 +260,9 @@ void* vehicle_thread(void* arg) {
         }
     }
 
-    printf("00:00:0%.1f Vehicle %d is ON the main route going %s\n", elapsed_time(), v->vid, (v->route == 'E') ? "East" : "West");
+    printf("00:00:0%.1f Train %d is ON the main track going %s\n", elapsed_time(), v->vid, (v->route == 'E') ? "East" : "West");
     usleep(v->travel_duration * 100000);
-    printf("00:00:0%.1f Vehicle %d is OFF the main route after going %s\n", elapsed_time(), v->vid, (v->route == 'E') ? "East" : "West");
+    printf("00:00:0%.1f Train %d is OFF the main track after going %s\n", elapsed_time(), v->vid, (v->route == 'E') ? "East" : "West");
 
     pthread_cond_broadcast(&cv);
     pthread_mutex_unlock(&mtx);

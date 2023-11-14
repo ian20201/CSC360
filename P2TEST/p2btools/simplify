@@ -1,0 +1,11 @@
+#!/usr/bin/sed -Ef
+s/^\s*00:00:(..)\.(.)\s+Train (.+) is (ready|ON|OFF) (to go|the main track going|the main track after going) (West|East)\s*$/\1\2 \3 \4 \6/
+t ok
+s/^/ERROR /
+q
+:ok
+s/ready/r/
+s/ON/c/
+s/OFF/f/
+s/West/w/
+s/East/e/

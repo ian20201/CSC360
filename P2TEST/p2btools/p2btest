@@ -1,0 +1,59 @@
+#!/bin/bash
+
+SIMPLIFY="$(pwd)"/simplify
+CHECK="$(pwd)"/check/check
+TESTDIR="$(pwd)"/test
+
+BUILD="$(mktemp -d)"
+
+fail () {
+	echo "$1"
+	rm -rf "$BUILD"
+	exit
+}
+
+[ $# -eq 1 ] || fail "usage: $0 P2_TAR_GZ"
+
+tar -xf "$1" -C "$BUILD"
+[ -d "$BUILD"/p2 ] || fail "invalid p2.tar.gz (it must extract to a directory \"p2\")"
+
+cd "$BUILD"/p2
+
+rm -f mts
+timeout -k1s 2s make || fail "make failed"
+[ -x mts ] || fail "make did not produce an executable \"mts\""
+
+run_test () {
+	[ -f "$1" ] || { echo "missing $1"; return 1; }
+	cat "$1" | sed -E 's/^/\t/;$a\'
+	timeout -k1s $2 ./mts "$1" | head -c100000 | tee ../raw | nl -v0 -nrz -w2 -s":  "
+	STATUS=${PIPESTATUS[0]}
+	echo -en "\nExit code: $STATUS "
+	case $STATUS in
+		0)   echo "(success)";;
+		124) echo "(timeout)";;
+		139) echo "(segfault)";;
+		*)   echo "(unknown failure)";;
+	esac
+	[ $STATUS -eq 0 ] || return 1
+	"$SIMPLIFY" ../raw > ../output
+	grep -q ERROR ../output && { echo "invalid output format"; return 1; }
+	"$CHECK" "$1" ../output
+}
+
+test () {
+	echo -e "\n**************** Test: $(basename "$1") ($2 timeout) ****************"
+	run_test "$1" "$2" && echo "PASS" || echo "FAIL"
+	echo "****************************************************************"
+}
+
+test input.txt 60s
+test "$TESTDIR"/basic.txt 60s
+test "$TESTDIR"/exclusion.txt 60s
+test "$TESTDIR"/priority.txt 60s
+test "$TESTDIR"/loading.txt 60s
+test "$TESTDIR"/index.txt 60s
+test "$TESTDIR"/direction.txt 60s
+test "$TESTDIR"/starvation.txt 60s
+
+rm -rf "$BUILD"
