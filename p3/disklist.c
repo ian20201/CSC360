@@ -47,7 +47,7 @@ struct __attribute__((__packed__)) dir_entry_t {
     
 
 int print_disklist(int fd,struct stat buffer){
-
+    
 }
 
 int main(int argc, char* argv[]) 
