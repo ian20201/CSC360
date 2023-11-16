@@ -77,6 +77,7 @@ int main(int argc, char* argv[]) {
             vehicle_num++;
         }
     }
+    // vehicle_num++;
     // Rewind the file pointer back to the beginning of the file.
     rewind(file);
 
@@ -88,17 +89,11 @@ int main(int argc, char* argv[]) {
         char dir;
         // Read the vehicle's direction, preparation duration, and travel duration from the file.
         fscanf(file, " %c %d %d", &dir, &vehicles[i].prep_duration, &vehicles[i].travel_duration);
-        printf("%c\n",dir);
         vehicles[i].vid = i;
         // Set the vehicle's route based on its direction.
         vehicles[i].route = dir == 'w' || dir == 'W' ? 'W' : 'E';
         // Set the vehicle's precedence based on its direction.
-        if(dir == 'w'|| dir == 'e'){
-            vehicles[i].precedence = dir == 'w' || dir == 'e' ? 0 : 1;
-        }else if(dir == 'W'|| dir == 'E'){
-            vehicles[i].precedence = dir == 'w' || dir == 'e' ? 2 : 3;
-        }
-        printf("%d\n",vehicles[i].precedence);
+        vehicles[i].precedence = dir == 'w' || dir == 'e' ? 0 : 1;
     }
     // Close the input file.
     fclose(file);
@@ -178,7 +173,6 @@ int compare_vehicles(const void* a, const void* b) {
     Vehicle* vehB = *(Vehicle**)b;
 
     if (vehA->precedence != vehB->precedence) {
-        // printf("%d,%d\n",vehB->precedence,vehA->precedence);
         return vehB->precedence - vehA->precedence;
     }
     if (vehA->route == vehB->route) {
