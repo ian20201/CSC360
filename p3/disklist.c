@@ -47,7 +47,13 @@ struct __attribute__((__packed__)) dir_entry_t {
     
 
 int print_disklist(int fd,struct stat buffer){
-    
+    int status = fstat(fd, &buffer);
+    void* address = mmap(NULL, buffer.st_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    // Get address in disk image file via memory map
+    struct superblock_t* superblock;
+    superblock = (struct superblock_t*) address;
+     
+
 }
 
 int main(int argc, char* argv[]) 
