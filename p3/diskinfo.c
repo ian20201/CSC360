@@ -50,6 +50,7 @@ int print_DiskInfo(int fd,struct stat buffer){
     int starting_byte = (fat_starting_blcok)*blocksize;
 
     void* entirefile = mmap(NULL, blockcount*blocksize, PROT_READ | PROT_WRITE, MAP_SHARED, fd,0);
+    //It times the number of the superblock and blocksize, and read through all the block
 
     int files_system_size;
     int counter = 0;
