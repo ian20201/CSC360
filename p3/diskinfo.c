@@ -11,16 +11,7 @@
 #include <unistd.h>
 #include <netinet/in.h>
 #include <fcntl.h>
-
-struct __attribute__((__packed__)) superblock_t{
-    uint8_t fs_id[8];
-    uint16_t block_size;
-    uint32_t file_system_block_count;
-    uint32_t fat_start_block;
-    uint32_t fat_block_count;
-    uint32_t root_dir_start_block;
-    uint32_t root_dir_block_count;
-};
+#include "diskstructs.h"
 
 int print_DiskInfo(int fd,struct stat buffer){
     int status = fstat(fd, &buffer);
