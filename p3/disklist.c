@@ -87,6 +87,7 @@ void print_sub_dir(int sub_dir_starting_block, int sub_dir_blcok_count, int bloc
         counter++;
         if(counter%8 == 0){
             memcpy(&starting_byte,address+(fatstartblcok*blocksize)+4*starting_byte,4);
+            //  Why times 4 ??
             starting_byte=htonl(starting_byte);
         }
         // Change the directory to the FAT location
