@@ -52,6 +52,75 @@ int print_disklist(int fd,struct stat buffer){
     // Get address in disk image file via memory map
     struct superblock_t* superblock;
     superblock = (struct superblock_t*) address;
+
+    int blocksize = htons(superblock->block_size);
+    int blockcount = htonl(superblock->file_system_block_count);
+	int rootblockcount = htonl(superblock->root_dir_block_count);
+	int rootstartblock = htonl(superblock->root_dir_start_block);
+    
+    int startingbyte = (rootstartblock)*blocksize;
+
+    void* entirefile = mmap(NULL, blockcount*blocksize, PROT_READ | PROT_WRITE, MAP_SHARED, fd,0);
+
+	char stat;
+    char filename[1000];
+    int file_size;
+    // int counter = 0;
+    // int reserved = 0;
+    // int available = 0;
+    // int allocated = 0;
+	int jump = 0;   
+	int spacing1 = 0; 
+
+
+    for(int i = 0; i < rootblockcount*(blocksize/64); i++){
+    	memcpy(&stat, entirefile+startingbyte+jump, 1);
+		memcpy(&filename, entirefile+startingbyte+jump+27, 31); 
+    	if(stat & (1 << 0)){
+ 			if(stat & (1 << 1)){
+				printf("F ");
+			}
+			else if(stat & (1 << 2)){
+				printf("D ");
+			}
+			memcpy(&file_size, entirefile+startingbyte+jump+9, 4);
+			file_size = ntohl(file_size);
+			printf("%10d ", file_size);
+			for(int name_count = 27; name_count < 58; name_count++){
+				memcpy(&stat, entirefile+startingbyte+jump+name_count, 1);
+				if(spacing1 == 0){
+					printf("%30c", stat);
+					spacing1 = 1;
+				}
+				else if(spacing1 == 1){
+					printf("%c", stat);
+				}
+			}
+            // printf("%s",filename);
+
+			memcpy(&file_size, entirefile+startingbyte+jump+20, 2);
+			file_size = ntohs(file_size);
+			printf("\t%d/", file_size);
+			memcpy(&stat, entirefile+startingbyte+jump+22, 1);
+			printf("%.2d/", stat);
+			memcpy(&stat, entirefile+startingbyte+jump+23, 1);
+			printf("%.2d ", stat);
+			memcpy(&stat, entirefile+startingbyte+jump+24, 1);
+			printf("%.2d:", stat);
+			memcpy(&stat, entirefile+startingbyte+jump+25, 1);
+			printf("%.2d:", stat);
+			memcpy(&stat, entirefile+startingbyte+jump+26, 1);
+			printf("%.2d", stat);
+			printf("\n");
+
+		}
+		spacing1 = 0;
+		jump = jump + 64;
+    	//counter = counter + 4;
+    }
+
+    munmap(address,buffer.st_size);
+    close(fd);
      
 
 }
@@ -61,6 +130,6 @@ int main(int argc, char* argv[])
     int fd = open(argv[1], O_RDWR);
     struct stat buffer;
     // Reference: https://stackoverflow.com/questions/56109844/what-is-the-different-between-struct-stat-buffer-and-buffer-in-linux-stat-fun
-
+    // printf("%c".argv[2]);
     print_disklist(fd, buffer);  
 }
