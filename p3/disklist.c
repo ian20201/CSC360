@@ -85,12 +85,7 @@ void print_sub_dir(int sub_dir_starting_block, int sub_dir_blcok_count, int bloc
     struct dir_entry_t* file_name;
     for(int i = 0; i < sub_dir_blcok_count*(blocksize/64); i++){
         counter++;
-        if(counter%8 == 0){
-            memcpy(&starting_byte,address+(fatstartblcok*blocksize)+4*starting_byte,4);
-            //  Why times 4 ??
-            starting_byte=htonl(starting_byte);
-        }
-        // Change the directory to the FAT location
+
         struct dir_entry_t* file_name = (void*)((char*)entirefile + starting_byte*blocksize + jump);
         //Store each file info in the struct for accesss
         struct dir_entry_timedate_t create_time_struct = file_name->create_time;
@@ -101,6 +96,14 @@ void print_sub_dir(int sub_dir_starting_block, int sub_dir_blcok_count, int bloc
                 create_time_struct.hour, create_time_struct.minute, create_time_struct.second);
         }
         // It print out the directy info
+
+        if(counter%8 == 0){
+            memcpy(&starting_byte,address+(fatstartblcok*blocksize)+4*starting_byte,4);
+            //  Why times 4 ??
+            starting_byte=htonl(starting_byte);
+        }
+        // Change the directory to the FAT location
+
         jump = jump + 64;
     }
 }
