@@ -24,7 +24,6 @@ void search_sub_dir(int sub_dir_starting_block, int sub_dir_blcok_count, int blo
 int copy_file(int sub_dir_starting_block, int sub_dir_blcok_count, int blocksize, void* address,void* entirefile,struct superblock_t* superblock,char* newfile,int file_size);
 
 int initialize_file(int fd,char* newfile,struct stat buffer, char *path[MAX_IN_COMMAND]){
-    // printf("%s size: %d\n",target,(int)sizeof(target));
     int status = fstat(fd, &buffer);
     void* address = mmap(NULL, buffer.st_size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     // Get address in disk image file via memory map
@@ -45,7 +44,6 @@ int initialize_file(int fd,char* newfile,struct stat buffer, char *path[MAX_IN_C
 
     struct dir_entry_t* dir_entry = (void*)((char*)entirefile + starting_byte*blocksize + 0);
     struct dir_entry_timedate_t create_time_struct = dir_entry->create_time;
-    // printf("directory starting_block %d\n",htonl(superblock->root_dir_start_block));
 
     search_sub_dir(htonl(superblock->root_dir_start_block),htonl(superblock->root_dir_block_count),blocksize,address,entirefile,superblock,path,newfile);
 
@@ -60,7 +58,6 @@ char get_file_type(uint8_t file_type) {
 }
 
 void search_sub_dir(int sub_dir_starting_block, int sub_dir_blcok_count, int blocksize, void* address,void* entirefile,struct superblock_t* superblock,char *path[MAX_IN_COMMAND],char* newfile){
-    // printf("sub_dir_starting_block %d\n",sub_dir_starting_block);
     int starting_byte = (sub_dir_starting_block);
     int fatstartblcok = htonl(superblock->fat_start_block);
     int printed = 1; //Set printed to be FALSE
@@ -79,11 +76,6 @@ void search_sub_dir(int sub_dir_starting_block, int sub_dir_blcok_count, int blo
             if(!strcmp(file_name->filename,path[pathcounter]) && (path[pathcounter+1] == NULL)){
                 pathcounter++;
                 if(get_file_type(file_name->status) == 'F'){
-                    // printf("file name: %s\n",file_name->filename);
-                    // printf("Target file name: %s\n",path[pathcounter-1]);
-                    // printf("Output file_size: %d\n",file_size);
-                    // printf("sub_dir_starting_block: %d\n",(int)htonl(file_name->starting_block));
-                    // printf("jump: %d\n",i*64);
                     copy_file(htonl(file_name->starting_block),htonl(file_name->block_count),blocksize,address,entirefile,superblock,newfile,file_size);
                     printed = 0;
                     printf("Copy File Success\n");
@@ -116,12 +108,8 @@ void search_sub_dir(int sub_dir_starting_block, int sub_dir_blcok_count, int blo
 }
 
 int copy_file(int sub_dir_starting_block, int sub_dir_blcok_count, int blocksize, void* address,void* entirefile,struct superblock_t* superblock,char* newfile,int file_size){
-    // printf("Output File Name: %s\n",newfile);
-    // printf("file_size %d\n",file_size);
-    // printf("sub_dir_starting_block %d\n",sub_dir_starting_block);
-    // printf("blocksize %d\n",blocksize);
     int fatstartblock = htonl(superblock->fat_start_block);
-    // printf("fatstartblock %d\n",fatstartblock);
+
     int targetfile = open(newfile, O_TRUNC | O_CREAT | O_WRONLY | O_RDONLY | O_APPEND, 777);
     char buffer;
         
@@ -142,8 +130,10 @@ int copy_file(int sub_dir_starting_block, int sub_dir_blcok_count, int blocksize
         memcpy(&sub_dir_starting_block,entirefile+(fatstartblock*blocksize)+4*sub_dir_starting_block,4);
         sub_dir_starting_block=htonl(sub_dir_starting_block);
     }
-    // return;
+    // while sub_dir_starting_block!= 0xFFFFFFFF(-1 if the type is int32_t), it will copt the data byte by byte into the
+    // target file, and change the sub_dir_starting_block to next FAT location until it reach -1.
     end = 0;
+    // Set end sign to be True(0)
 }
 
 int main(int argc, char* argv[]) 
