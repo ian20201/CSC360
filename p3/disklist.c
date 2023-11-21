@@ -123,7 +123,6 @@ int main(int argc, char* argv[])
     int fd = open(argv[1], O_RDWR);
     struct stat buffer;
     // Reference: https://stackoverflow.com/questions/56109844/what-is-the-different-between-struct-stat-buffer-and-buffer-in-linux-stat-fun
-    int argv_length = 0; 
 
     char *path[MAX_IN_COMMAND];
     for(int counter = 0;counter < MAX_IN_COMMAND;counter++){
@@ -151,8 +150,7 @@ int main(int argc, char* argv[])
     // printf("%s,%s\n",path[0],path[1]);
 
     if((argv[2] != NULL) && (argv[2][0] == '/')){
-        if(argv_length == 3);
-            print_disklist(fd, buffer,path);
+        print_disklist(fd, buffer,path);
 
     }else{
         if(argv[2] == NULL){
