@@ -101,7 +101,7 @@ void search_sub_dir(int sub_dir_starting_block, int sub_dir_blcok_count, int blo
         // Change the directory to the FAT location
     }
     if(end == 1 && printed == 1){
-        printf("Target File Not Found\n");
+        printf("File not found.\n");
     }
     end = 0;
     // Set end sign to be True(0)
